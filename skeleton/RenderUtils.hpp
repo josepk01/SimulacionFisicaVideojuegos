@@ -3,6 +3,7 @@
 
 #include "PxPhysicsAPI.h"
 #include "core.hpp"
+#include "Particle.h"
 
 class RenderItem;
 void RegisterRenderItem(const RenderItem* _item);

@@ -124,6 +124,10 @@ void renderCallback()
 	//	renderActors(&actors[0], static_cast<PxU32>(actors.size()), true, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 	//}
 
+	// Llama a ParticleRender para representar la partícula
+	Particle particle(physx::PxVec3(0.0f, 0.0f, 0.0f), physx::PxVec3(1.0f, 0.0f, 0.0f));  // Crea una instancia de la partícula
+	particle.ParticleRender(*sCamera);  // Llama a la función de renderizado de la partícula
+
 	finishRender();
 }
 
