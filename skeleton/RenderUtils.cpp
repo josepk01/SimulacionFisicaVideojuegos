@@ -4,6 +4,7 @@
 
 #include "core.hpp"
 #include "RenderUtils.hpp"
+#include "Particle.h"
 
 
 using namespace physx;
@@ -141,7 +142,7 @@ void renderLoop()
 
 	setupDefaultWindow("Simulacion Fisica Videojuegos");
 	setupDefaultRenderState();
-
+	Particle(Vector3(5,5,5),Vector3(0,5,0));
 	glutIdleFunc(idleCallback);
 	glutDisplayFunc(renderCallback);
 	glutKeyboardFunc(keyboardCallback);
