@@ -1,7 +1,8 @@
 #include "particle.h"
 
 // Constructor de Particle
-Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping) {
+Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping, double mass) {
+    this->mass = mass;
     pose = physx::PxTransform(pos);
     vel = v;
     acc = acceleration;

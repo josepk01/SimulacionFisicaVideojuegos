@@ -36,18 +36,17 @@ int selectedProjectileType = 0; // Por defecto, seleccionamos el primer tipo de 
 
 void shootProjectile(const PxTransform& camera) {
     Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
+    PxVec3 direction = camera.q.getBasisVector2() * -1;
+    float speed = 30.0f;
 
-    PxVec3 direction = camera.q.getBasisVector2() * -1; 
-    float speed = 30.0f; // Ajustar velocidad de salida
     Vector3 v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
-
     Vector3 acceleration = Vector3(0, -9.81, 0);
     double damping = 0.99;
 
-    Particle* newProjectile = new Particle(pos, v, acceleration, damping);
+    double mass = 136.32; // Masa calculada
+    Particle* newProjectile = new Particle(pos, v, acceleration, damping, mass);
     projectiles.push_back(newProjectile);
 }
-
 
 
 
@@ -75,7 +74,7 @@ void initPhysics(bool interactive)
     sceneDesc.simulationEventCallback = &gContactReportCallback; // Establece un callback para eventos de simulación
     gScene = gPhysics->createScene(sceneDesc); // Crea una escena de física
 
-    particle = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99);
+    //particle = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99);
 
 }
 

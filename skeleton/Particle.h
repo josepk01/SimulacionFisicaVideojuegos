@@ -4,11 +4,12 @@
 
 class Particle {
 public:
-    Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping);
+    Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping, double mass); 
     ~Particle();
 
     void integrate(double t);
 private:
+    double mass;  
     Vector3 vel;
     Vector3 acc;
     double damping;
