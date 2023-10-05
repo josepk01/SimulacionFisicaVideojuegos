@@ -30,6 +30,26 @@ PxScene* gScene = NULL; // Declara un puntero a PxScene llamado gScene e inicial
 ContactReportCallback gContactReportCallback; // Declara un objeto de tipo ContactReportCallback llamado gContactReportCallback
 
 Particle* particle;
+std::vector<Particle*> projectiles; // Vector para almacenar múltiples partículas (proyectiles)
+int selectedProjectileType = 0; // Por defecto, seleccionamos el primer tipo de proyectil
+
+
+void shootProjectile(const PxTransform& camera) {
+    Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
+
+    PxVec3 direction = camera.q.getBasisVector2() * -1; 
+    float speed = 30.0f; // Ajustar velocidad de salida
+    Vector3 v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+
+    Vector3 acceleration = Vector3(0, -9.81, 0);
+    double damping = 0.99;
+
+    Particle* newProjectile = new Particle(pos, v, acceleration, damping);
+    projectiles.push_back(newProjectile);
+}
+
+
+
 
 // Inicializa el motor de física
 void initPhysics(bool interactive)
@@ -55,25 +75,29 @@ void initPhysics(bool interactive)
     sceneDesc.simulationEventCallback = &gContactReportCallback; // Establece un callback para eventos de simulación
     gScene = gPhysics->createScene(sceneDesc); // Crea una escena de física
 
-    particle = new Particle(Vector3(0, 0, 0), Vector3(1, 0, 0));
+    particle = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99);
 
 }
 
 // Función para realizar un paso de física
-void stepPhysics(bool interactive, double t)
-{
-    PX_UNUSED(interactive); // No se utiliza la variable 'interactive'
+void stepPhysics(bool interactive, double t) {
+    gScene->simulate(t);
+    gScene->fetchResults(true);
 
-    gScene->simulate(t); // Simula la escena durante un tiempo 't'
-    gScene->fetchResults(true); // Recupera los resultados de la simulación
-
-    particle->integrate(t);
+    for (Particle* proj : projectiles) {
+        proj->integrate(t);
+    }
 }
 
 // Función para limpiar los datos
 void cleanupPhysics(bool interactive)
 {
     delete particle;
+
+    for (Particle* proj : projectiles) {
+        delete proj;
+    }
+    projectiles.clear();
 
     PX_UNUSED(interactive); // No se utiliza la variable 'interactive'
 
@@ -84,32 +108,31 @@ void cleanupPhysics(bool interactive)
     gPvd->release(); // Libera la instancia de PxPvd
     transport->release(); // Libera el transporte
     gFoundation->release(); // Libera la fundación
+
+
 }
 
 // Función llamada cuando se presiona una tecla
-void keyPress(unsigned char key, const PxTransform& camera)
-{
-    PX_UNUSED(camera); // No se utiliza la variable 'camera'
-
-    switch (toupper(key)) // Convierte el carácter a mayúscula y evalúa
-    {
-        //case 'B': break;
-        //case ' ':	break;
+void keyPress(unsigned char key, const PxTransform& camera) {
+    switch (toupper(key)) {
     case ' ':
-    {
+        shootProjectile(camera); // Disparamos un proyectil cuando se pulsa el espacio
         break;
-    }
+    case '1': 
+        selectedProjectileType = 0;
+        break;
     default:
         break;
     }
 }
+
+
 //Funcion de manejo de colisiones (ahora vacio)
 void onCollision(physx::PxActor* actor1, physx::PxActor* actor2)
 {
     PX_UNUSED(actor1);
     PX_UNUSED(actor2);
 }
-
 
 int main(int, const char* const*)
 {
