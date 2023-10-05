@@ -41,3 +41,5 @@ skeleton/debug/**
 
 # Zip files
 *.zip
+/skeleton/game.vcxproj
+/skeleton/game.vcxproj.filters
