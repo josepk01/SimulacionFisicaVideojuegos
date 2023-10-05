@@ -9,6 +9,7 @@
 #include "callbacks.hpp" // Incluye el archivo callbacks.hpp
 
 #include <iostream> // Incluye la biblioteca de entrada/salida estándar
+#include "Particle.h"
 
 std::string display_text = "This is a test"; // Declara una cadena de texto llamada "display_text" con un valor inicial
 
@@ -27,6 +28,8 @@ PxPvd* gPvd = NULL; // Declara un puntero a PxPvd llamado gPvd e inicialízalo co
 PxDefaultCpuDispatcher* gDispatcher = NULL; // Declara un puntero a PxDefaultCpuDispatcher llamado gDispatcher e inicialízalo como NULL
 PxScene* gScene = NULL; // Declara un puntero a PxScene llamado gScene e inicialízalo como NULL
 ContactReportCallback gContactReportCallback; // Declara un objeto de tipo ContactReportCallback llamado gContactReportCallback
+
+Particle* particle;
 
 // Inicializa el motor de física
 void initPhysics(bool interactive)
@@ -51,6 +54,9 @@ void initPhysics(bool interactive)
     sceneDesc.filterShader = contactReportFilterShader; // Establece una función para el filtrado de colisiones
     sceneDesc.simulationEventCallback = &gContactReportCallback; // Establece un callback para eventos de simulación
     gScene = gPhysics->createScene(sceneDesc); // Crea una escena de física
+
+    particle = new Particle(Vector3(0, 0, 0), Vector3(1, 0, 0));
+
 }
 
 // Función para realizar un paso de física
@@ -60,11 +66,15 @@ void stepPhysics(bool interactive, double t)
 
     gScene->simulate(t); // Simula la escena durante un tiempo 't'
     gScene->fetchResults(true); // Recupera los resultados de la simulación
+
+    particle->integrate(t);
 }
 
 // Función para limpiar los datos
 void cleanupPhysics(bool interactive)
 {
+    delete particle;
+
     PX_UNUSED(interactive); // No se utiliza la variable 'interactive'
 
     gScene->release(); // Libera la escena
