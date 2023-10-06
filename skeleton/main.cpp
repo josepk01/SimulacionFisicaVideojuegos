@@ -74,8 +74,8 @@ void initPhysics(bool interactive)
     sceneDesc.simulationEventCallback = &gContactReportCallback; // Establece un callback para eventos de simulación
     gScene = gPhysics->createScene(sceneDesc); // Crea una escena de física
 
-    //particle = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99);
-
+    Particle* newProjectile = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99, 136.32);
+    projectiles.push_back(newProjectile);
 }
 
 // Función para realizar un paso de física
