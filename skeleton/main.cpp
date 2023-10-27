@@ -1,124 +1,64 @@
-#include <ctype.h> // Incluye la biblioteca ctype.h
-
-#include <PxPhysicsAPI.h> // Incluye la biblioteca de la API de Physics (PhysX)
-
-#include <vector> // Incluye la biblioteca vector
-
-#include "core.hpp" // Incluye el archivo core.hpp
-#include "RenderUtils.hpp" // Incluye el archivo RenderUtils.hpp
-#include "callbacks.hpp" // Incluye el archivo callbacks.hpp
-
-#include <iostream> // Incluye la biblioteca de entrada/salida estándar
+#include <ctype.h>
+#include <PxPhysicsAPI.h>
+#include <vector>
+#include "core.hpp"
+#include "RenderUtils.hpp"
+#include "callbacks.hpp"
+#include <iostream>
 #include "Particle.h"
+#include "ParticleSystem.h"
+#include "GaussianParticleGenerator.h"
+#include "UniformParticleGenerator.h"
 
-std::string display_text = "This is a test"; // Declara una cadena de texto llamada "display_text" con un valor inicial
+std::string display_text = "This is a test";
+using namespace physx;
 
-using namespace physx; // Usa el espacio de nombres physx
+PxDefaultAllocator    gAllocator;
+PxDefaultErrorCallback  gErrorCallback;
 
-PxDefaultAllocator    gAllocator; // Declara un objeto de tipo PxDefaultAllocator llamado gAllocator
-PxDefaultErrorCallback  gErrorCallback; // Declara un objeto de tipo PxDefaultErrorCallback llamado gErrorCallback
+PxFoundation* gFoundation = NULL;
+PxPhysics* gPhysics = NULL;
+PxMaterial* gMaterial = NULL;
+PxPvd* gPvd = NULL;
+PxDefaultCpuDispatcher* gDispatcher = NULL;
+PxScene* gScene = NULL;
+ContactReportCallback gContactReportCallback;
 
-PxFoundation* gFoundation = NULL; // Declara un puntero a PxFoundation llamado gFoundation e inicialízalo como NULL
-PxPhysics* gPhysics = NULL; // Declara un puntero a PxPhysics llamado gPhysics e inicialízalo como NULL
+ParticleSystem* particleSystem = new ParticleSystem();
 
-PxMaterial* gMaterial = NULL; // Declara un puntero a PxMaterial llamado gMaterial e inicialízalo como NULL
 
-PxPvd* gPvd = NULL; // Declara un puntero a PxPvd llamado gPvd e inicialízalo como NULL
+enum ParticleGeneratorType {
+    DEFAULT_GENERATOR,
+    GAUSSIAN_GENERATOR,
+    UNIFORM_GENERATOR,
+    FIREWORK_GENERATOR 
+};
 
-PxDefaultCpuDispatcher* gDispatcher = NULL; // Declara un puntero a PxDefaultCpuDispatcher llamado gDispatcher e inicialízalo como NULL
-PxScene* gScene = NULL; // Declara un puntero a PxScene llamado gScene e inicialízalo como NULL
-ContactReportCallback gContactReportCallback; // Declara un objeto de tipo ContactReportCallback llamado gContactReportCallback
 
-Particle* particle;
-std::vector<Particle*> projectiles; // Vector para almacenar múltiples partículas (proyectiles)
-int selectedProjectileType = 0; // Por defecto, seleccionamos el primer tipo de proyectil
+ParticleGeneratorType currentGeneratorType = DEFAULT_GENERATOR;
 
 
 void shootProjectile(const PxTransform& camera) {
     Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
     PxVec3 direction = camera.q.getBasisVector2() * -1;
     float speed = 30.0f;
-
     Vector3 v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
     Vector3 acceleration = Vector3(0, -9.81, 0);
     double damping = 0.99;
+    double mass = 136.32;
 
-    double mass = 136.32; // Masa calculada
-    Particle* newProjectile = new Particle(pos, v, acceleration, damping, mass);
-    projectiles.push_back(newProjectile);
-}
-
-
-
-// Inicializa el motor de física
-void initPhysics(bool interactive)
-{
-    PX_UNUSED(interactive); // No se utiliza la variable 'interactive'
-
-    gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback); // Crea una fundación de PhysX
-
-    gPvd = PxCreatePvd(*gFoundation); // Crea una instancia de PxPvd (Visualización de Depuración de PhysX)
-    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10); // Crea un transporte para la visualización de depuración
-    gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL); // Conecta la instancia de PxPvd al transporte
-
-    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd); // Crea una instancia de PxPhysics
-
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f); // Crea un material de física
-
-    // Configuración de la escena de física
-    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f); // Establece la gravedad
-    gDispatcher = PxDefaultCpuDispatcherCreate(2); // Crea un despachador para la CPU
-    sceneDesc.cpuDispatcher = gDispatcher;
-    sceneDesc.filterShader = contactReportFilterShader; // Establece una función para el filtrado de colisiones
-    sceneDesc.simulationEventCallback = &gContactReportCallback; // Establece un callback para eventos de simulación
-    gScene = gPhysics->createScene(sceneDesc); // Crea una escena de física
-
-    Particle* newProjectile = new Particle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99, 136.32);
-    projectiles.push_back(newProjectile);
-}
-
-// Función para realizar un paso de física
-void stepPhysics(bool interactive, double t) {
-    gScene->simulate(t);
-    gScene->fetchResults(true);
-
-    for (Particle* proj : projectiles) {
-        proj->integrate(t);
-    }
-}
-
-// Función para limpiar los datos
-void cleanupPhysics(bool interactive)
-{
-    delete particle;
-
-    for (Particle* proj : projectiles) {
-        delete proj;
-    }
-    projectiles.clear();
-
-    PX_UNUSED(interactive); // No se utiliza la variable 'interactive'
-
-    gScene->release(); // Libera la escena
-    gDispatcher->release(); // Libera el despachador
-    gPhysics->release(); // Libera la instancia de PxPhysics
-    PxPvdTransport* transport = gPvd->getTransport(); // Obtiene el transporte de PxPvd
-    gPvd->release(); // Libera la instancia de PxPvd
-    transport->release(); // Libera el transporte
-    gFoundation->release(); // Libera la fundación
-
-
-}
-
-// Función llamada cuando se presiona una tecla
-void keyPress(unsigned char key, const PxTransform& camera) {
-    switch (toupper(key)) {
-    case ' ':
-        shootProjectile(camera); // Disparamos un proyectil cuando se pulsa el espacio
+    switch (currentGeneratorType) {
+    case DEFAULT_GENERATOR:
+        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
         break;
-    case '1': 
-        selectedProjectileType = 0;
+    case GAUSSIAN_GENERATOR:
+        particleSystem->createParticleUsingGenerator("GaussianGenerator");
+        break;
+    case UNIFORM_GENERATOR:
+        particleSystem->createParticleUsingGenerator("UniformGenerator");
+        break;
+    case FIREWORK_GENERATOR: // Añade esta sección
+        particleSystem->createParticle(pos, v, acceleration, damping, mass, true);
         break;
     default:
         break;
@@ -126,25 +66,92 @@ void keyPress(unsigned char key, const PxTransform& camera) {
 }
 
 
-//Funcion de manejo de colisiones (ahora vacio)
-void onCollision(physx::PxActor* actor1, physx::PxActor* actor2)
-{
+
+void initPhysics(bool interactive) {
+    PX_UNUSED(interactive);
+    gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
+    gPvd = PxCreatePvd(*gFoundation);
+    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+    gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+
+    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+
+    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+    gDispatcher = PxDefaultCpuDispatcherCreate(2);
+    sceneDesc.cpuDispatcher = gDispatcher;
+    sceneDesc.filterShader = contactReportFilterShader;
+    sceneDesc.simulationEventCallback = &gContactReportCallback;
+    gScene = gPhysics->createScene(sceneDesc);
+    // Añade generadores de partículas
+    particleSystem->addParticleGenerator(new GaussianParticleGenerator("GaussianGenerator", { -10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
+    particleSystem->addParticleGenerator(new UniformParticleGenerator("UniformGenerator", { 10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
+
+    //sparticleSystem->createParticle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99, 136.32);
+}
+
+void stepPhysics(bool interactive, double t) {
+    gScene->simulate(t);
+    gScene->fetchResults(true);
+    particleSystem->updateParticles(t);    
+    particleSystem->integrate(t);
+}
+
+void cleanupPhysics(bool interactive) {
+    delete particleSystem;
+    PX_UNUSED(interactive);
+    gScene->release();
+    gDispatcher->release();
+    gPhysics->release();
+    PxPvdTransport* transport = gPvd->getTransport();
+    gPvd->release();
+    transport->release();
+    gFoundation->release();
+}
+
+void keyPress(unsigned char key, const PxTransform& camera) {
+    switch (toupper(key)) {
+    case ' ':
+        shootProjectile(camera);
+        break;
+    case '1':
+        currentGeneratorType = DEFAULT_GENERATOR;
+        std::cout << "Selected Default Particle Generator." << std::endl;
+        break;
+    case '2':
+        currentGeneratorType = GAUSSIAN_GENERATOR;
+        std::cout << "Selected Gaussian Particle Generator." << std::endl;
+        break;
+    case '3':
+        currentGeneratorType = UNIFORM_GENERATOR;
+        std::cout << "Selected Uniform Particle Generator." << std::endl;
+        break;
+    case '4': 
+        currentGeneratorType = FIREWORK_GENERATOR;
+        std::cout << "Selected Firework Particle Generator." << std::endl;
+        break;
+    default:
+        break;
+    }
+}
+
+void onCollision(physx::PxActor* actor1, physx::PxActor* actor2) {
     PX_UNUSED(actor1);
     PX_UNUSED(actor2);
 }
 
-int main(int, const char* const*)
-{
+int main(int, const char* const*) {
 #ifndef OFFLINE_EXECUTION
-    extern void renderLoop(); // Declaración de una función externa llamada renderLoop
-    renderLoop(); // Llama a la función renderLoop
+    extern void renderLoop();
+    renderLoop();
 #else
-    static const PxU32 frameCount = 100; // Número de fotogramas para la ejecución fuera de línea
-    initPhysics(false); // Inicializa la física en modo fuera de línea
+    static const PxU32 frameCount = 100;
+    initPhysics(false);
     for (PxU32 i = 0; i < frameCount; i++)
-        stepPhysics(false); // Realiza pasos de física en modo fuera de línea
-    cleanupPhysics(false); // Limpia los datos en modo fuera de línea
+        stepPhysics(false, 1.0 / 60.0); // Suponiendo un delta de tiempo de 1/60 por fotograma
+    cleanupPhysics(false);
 #endif
 
-    return 0; // Devuelve 0 como código de salida
+    return 0;
 }
