@@ -87,8 +87,6 @@ void initPhysics(bool interactive) {
     // Añade generadores de partículas
     particleSystem->addParticleGenerator(new GaussianParticleGenerator("GaussianGenerator", { -10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
     particleSystem->addParticleGenerator(new UniformParticleGenerator("UniformGenerator", { 10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
-
-    //sparticleSystem->createParticle(Vector3(-10, 20, 0), Vector3(20, 0, 0), Vector3(0, -9.81, 0), 0.99, 136.32);
 }
 
 void stepPhysics(bool interactive, double t) {

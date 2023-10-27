@@ -10,6 +10,17 @@ void ParticleSystem::integrate(double t) {
     for (Particle* p : particles) {
         p->integrate(t);
     }
+    for (Particle* f : fireworks) {
+        f->integrate(t);
+    }
+    auto it = fireworks.begin(); 
+    while (it != fireworks.end()) {
+        if ((*it)->isAlivef()) {
+            delete (*it);  
+            it = fireworks.erase(it);
+        }
+        else it++;
+    }
 }
 
 ParticleGenerator* ParticleSystem::getParticleGenerator(std::string name) {
@@ -34,8 +45,15 @@ void ParticleSystem::createParticleUsingGenerator(std::string generatorName) {
 }
 
 void ParticleSystem::createParticle(Vector3 position, Vector3 velocity, Vector3 acceleration, double damping, double mass, bool firework) {
-    Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 2000, firework);
-    particles.push_back(newParticle);
+    if (!firework)
+    {
+        Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 1, firework);
+        particles.push_back(newParticle);
+    }
+    else
+    {
+        fireworks.push_back(new Firework(position, fireworks));
+    }
 }
 
 void ParticleSystem::updateParticles(double t) {

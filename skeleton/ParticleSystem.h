@@ -9,7 +9,7 @@ class ParticleSystem {
 private:
     std::list<Particle*> particles;  // Lista de partículas
     std::list<ParticleGenerator*> particle_generators;  // Generadores de partículas
-
+    std::list<Firework*> fireworks;//lista de firework
 public:
     ParticleSystem();
 

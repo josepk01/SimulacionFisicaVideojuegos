@@ -12,10 +12,14 @@ public:
     virtual ~Particle();
 
     void integrate(double t);
-    virtual void explode(std::list<Particle*> fireworks) {}
+    virtual void explode(std::list<Firework*> fireworks) {}
+    bool isAlivef()
+    {
+        return isAlive;
+    }
 protected:
     bool isInsideBox(const Vector3& point);
-    std::list<Particle*> fireworks;//lista de firework
+    bool isAlive;  // Verdadero si la partícula todavía está activa.
     bool fire;
     double mass;
     Vector3 vel;

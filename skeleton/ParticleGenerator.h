@@ -1,6 +1,6 @@
 #pragma once
 #include <list>
-#include "Particle.h"
+#include "Firework.h"
 
 class ParticleGenerator {
 protected:
