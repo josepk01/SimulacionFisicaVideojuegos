@@ -1,5 +1,5 @@
 #include "particle.h"
-#include "Firework.h"
+
 
 // Constructor de Particle
 Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping, double mass, double lifetime,bool firework) {
@@ -17,11 +17,11 @@ Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping,
 
 // Destructor de Particle
 Particle::~Particle() {
-    //renderItem->release();
+    isAlive = false;
 }
 
 bool Particle::isInsideBox(const Vector3& point) {
-    float halfSize = 10.0; // La mitad de 100
+    float halfSize = 100.0; // La mitad de 100
     return point.x >= pose.p.x - halfSize && point.x <= pose.p.x + halfSize &&
         point.y >= pose.p.y - halfSize && point.y <= pose.p.y + halfSize &&
         point.z >= pose.p.z - halfSize && point.z <= pose.p.z + halfSize;
@@ -45,7 +45,7 @@ void Particle::integrate(double t) {
     vel *= pow(damping, t);
 
     if (elapsedTime > lifetime || !isInsideBox(pose.p)) {
-        isAlive = false; // Marcar la partícula como no activa
+        Particle::~Particle();
     }
     
 }

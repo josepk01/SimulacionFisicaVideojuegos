@@ -10,18 +10,32 @@ void ParticleSystem::integrate(double t) {
     for (Particle* p : particles) {
         p->integrate(t);
     }
-    for (Particle* f : fireworks) {
+    for (Firework* f : fireworks) {
         f->integrate(t);
     }
-    auto it = fireworks.begin(); 
-    while (it != fireworks.end()) {
-        if ((*it)->isAlivef()) {
-            delete (*it);  
+
+    // Eliminar partículas que no están vivas
+    for (auto it = particles.begin(); it != particles.end(); ) {
+        if (!(*it)->isAlivef()) {
+            delete* it;
+            it = particles.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    for (auto it = fireworks.begin(); it != fireworks.end(); ) {
+        if (!(*it)->isAlivef()) {
+            delete* it;
             it = fireworks.erase(it);
         }
-        else it++;
+        else {
+            ++it;
+        }
     }
 }
+
 
 ParticleGenerator* ParticleSystem::getParticleGenerator(std::string name) {
     // Devuelve un generador de partículas por nombre (si existe)
@@ -52,7 +66,7 @@ void ParticleSystem::createParticle(Vector3 position, Vector3 velocity, Vector3 
     }
     else
     {
-        fireworks.push_back(new Firework(position, fireworks));
+        fireworks.push_back(new Firework(position, fireworks, 3));
     }
 }
 

@@ -58,7 +58,7 @@ void shootProjectile(const PxTransform& camera) {
         particleSystem->createParticleUsingGenerator("UniformGenerator");
         break;
     case FIREWORK_GENERATOR: // Añade esta sección
-        particleSystem->createParticle(pos, v, acceleration, damping, mass, true);
+        particleSystem->createParticle(Vector3(0,20,0), v, acceleration, damping, mass, true);
         break;
     default:
         break;

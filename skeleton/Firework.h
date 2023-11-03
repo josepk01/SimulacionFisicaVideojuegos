@@ -8,7 +8,7 @@
 
 class Firework : public Particle {
 public:
-    Firework(Vector3 pos, std::list<Firework*>& fireworks);
+    Firework(Vector3 pos, std::list<Firework*>& fireworks, int numero);
     ~Firework();
     void integrate(double t);
 
@@ -23,7 +23,7 @@ private:
     int shape;     // Podemos usar un int o enum para diferentes formas
 
     static double randomDouble(double min, double max);
-
+    int num;
     std::list<Firework*>* fireworkslist;
 };
 
