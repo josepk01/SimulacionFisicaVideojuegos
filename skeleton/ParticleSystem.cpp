@@ -1,12 +1,29 @@
 #include "ParticleSystem.h"
+#include "ForceGenerator.h"
 
 
 ParticleSystem::ParticleSystem() {
 
 }
+ParticleSystem::~ParticleSystem()
+{
 
+}
+void ParticleSystem::addForceGenerator(ForceGenerator* forceGenerator) {
+    forceGenerators.push_back(forceGenerator);
+}
+void ParticleSystem::addExplosionGenerator(ExplosionForceGenerator* forceGenerator) {
+    explosionGen = forceGenerator;
+}
 void ParticleSystem::integrate(double t) {
     // Actualiza todas las partículas en la lista de partículas
+    for (ForceGenerator* fg : forceGenerators) {
+        for (Particle* p : particles) {
+            fg->updateForce(p, t);
+        }
+    }
+
+    // Luego integramos las partículas con las nuevas fuerzas aplicadas
     for (Particle* p : particles) {
         p->integrate(t);
     }
@@ -75,3 +92,5 @@ void ParticleSystem::updateParticles(double t) {
         pg->generate(particles, t);
     }
 }
+
+

@@ -9,6 +9,10 @@
 #include "ParticleSystem.h"
 #include "GaussianParticleGenerator.h"
 #include "UniformParticleGenerator.h"
+#include "GravityForceGenerator.h"
+#include "WindForceGenerator.h"
+#include "VortexForceGenerator.h"
+#include "ExplosionForceGenerator.h"
 
 std::string display_text = "This is a test";
 using namespace physx;
@@ -23,6 +27,7 @@ PxPvd* gPvd = NULL;
 PxDefaultCpuDispatcher* gDispatcher = NULL;
 PxScene* gScene = NULL;
 ContactReportCallback gContactReportCallback;
+double gameTime;
 
 ParticleSystem* particleSystem = new ParticleSystem();
 
@@ -65,8 +70,6 @@ void shootProjectile(const PxTransform& camera) {
     }
 }
 
-
-
 void initPhysics(bool interactive) {
     PX_UNUSED(interactive);
     gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
@@ -87,6 +90,19 @@ void initPhysics(bool interactive) {
     // Añade generadores de partículas
     particleSystem->addParticleGenerator(new GaussianParticleGenerator("GaussianGenerator", { -10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
     particleSystem->addParticleGenerator(new UniformParticleGenerator("UniformGenerator", { 10, 20, 0 }, { 6, 6, 6 }, 1, 0.5));
+
+    GravityForceGenerator* gravityGen = new GravityForceGenerator(Vector3(0, -9.81f, 0));
+    WindForceGenerator* windGen = new WindForceGenerator(Vector3(0.0f, 0.0f, 0.0f), 0 /*100*/); // Asumiendo un viento de 10 en el eje X
+    // Crear el generador de torbellinos con un centro específico y una constante K
+    VortexForceGenerator* vortexGen = new VortexForceGenerator(Vector3(0, 0, 0), /*10000.0f*/0); // Ejemplo de fuerza del torbellino
+    // Crear el generador de explosiones con un centro específico y una constante K, R y tau
+    ExplosionForceGenerator* explosionGen = new ExplosionForceGenerator(Vector3(0, 0, 0), 10000.0f, 100.0f, 10.0f);
+
+    particleSystem->addForceGenerator(gravityGen);
+    particleSystem->addForceGenerator(windGen);
+    particleSystem->addForceGenerator(vortexGen);
+    particleSystem->addForceGenerator(explosionGen);
+    particleSystem->addExplosionGenerator(explosionGen);
 }
 
 void stepPhysics(bool interactive, double t) {
@@ -94,6 +110,8 @@ void stepPhysics(bool interactive, double t) {
     gScene->fetchResults(true);
     particleSystem->updateParticles(t);    
     particleSystem->integrate(t);
+    gameTime = t;
+
 }
 
 void cleanupPhysics(bool interactive) {
@@ -128,6 +146,9 @@ void keyPress(unsigned char key, const PxTransform& camera) {
     case '4': 
         currentGeneratorType = FIREWORK_GENERATOR;
         std::cout << "Selected Firework Particle Generator." << std::endl;
+        break;
+    case 'E': // Supongamos que 'E' es la tecla para detonar la explosión
+        particleSystem->detonateExplosion(gameTime);
         break;
     default:
         break;
