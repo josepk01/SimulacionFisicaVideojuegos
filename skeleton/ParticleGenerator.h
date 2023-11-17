@@ -8,6 +8,7 @@ protected:
     Vector3 position;
     Vector3 velocity;
     double rate;
+    int live = 4;
 
 public:
     ParticleGenerator(std::string name, Vector3 position, Vector3 velocity, double rate)

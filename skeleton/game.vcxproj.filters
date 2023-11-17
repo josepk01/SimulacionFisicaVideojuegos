@@ -11,15 +11,6 @@
     <ClCompile Include="RenderUtils.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="GaussianParticleGenerator.cpp">
-      <Filter>Generators</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleGenerator.cpp">
-      <Filter>Generators</Filter>
-    </ClCompile>
-    <ClCompile Include="UniformParticleGenerator.cpp">
-      <Filter>Generators</Filter>
-    </ClCompile>
     <ClCompile Include="Render\Camera.cpp">
       <Filter>core</Filter>
     </ClCompile>

@@ -94,9 +94,9 @@ void initPhysics(bool interactive) {
     GravityForceGenerator* gravityGen = new GravityForceGenerator(Vector3(0, -9.81f, 0));
     WindForceGenerator* windGen = new WindForceGenerator(Vector3(0.0f, 0.0f, 0.0f), 0 /*100*/); // Asumiendo un viento de 10 en el eje X
     // Crear el generador de torbellinos con un centro específico y una constante K
-    VortexForceGenerator* vortexGen = new VortexForceGenerator(Vector3(0, 0, 0), /*10000.0f*/0); // Ejemplo de fuerza del torbellino
+    VortexForceGenerator* vortexGen = new VortexForceGenerator(Vector3(0, 0, 0), 10000.0f); // Ejemplo de fuerza del torbellino
     // Crear el generador de explosiones con un centro específico y una constante K, R y tau
-    ExplosionForceGenerator* explosionGen = new ExplosionForceGenerator(Vector3(0, 0, 0), 10000.0f, 100.0f, 10.0f);
+    ExplosionForceGenerator* explosionGen = new ExplosionForceGenerator(Vector3(0, 0, 0), 00000.0f, 100.0f, 10.0f);
 
     particleSystem->addForceGenerator(gravityGen);
     particleSystem->addForceGenerator(windGen);

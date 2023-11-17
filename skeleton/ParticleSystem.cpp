@@ -78,7 +78,7 @@ void ParticleSystem::createParticleUsingGenerator(std::string generatorName) {
 void ParticleSystem::createParticle(Vector3 position, Vector3 velocity, Vector3 acceleration, double damping, double mass, bool firework) {
     if (!firework)
     {
-        Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 1, firework);
+        Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 4, firework);
         particles.push_back(newParticle);
     }
     else

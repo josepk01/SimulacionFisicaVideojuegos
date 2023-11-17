@@ -1,7 +1,7 @@
 #include "Firework.h"
 #include <iostream>
 Firework::Firework(Vector3 pos, std::list<Firework*>& fireworks, int numero)
-    : Particle(pos, Vector3(randomDouble(-50, 50), randomDouble(10, 100), randomDouble(-50, 50)), Vector3(0, -9.81, 0), 0.99, 1.0, 2, true) {
+    : Particle(pos, Vector3(randomDouble(-50, 50), randomDouble(10, 100), randomDouble(-50, 50)), Vector3(0, -9.81, 0), 0.99, 136.32, 2, true) {
 
     this->initialVelocity = Vector3(randomDouble(-15, 15), randomDouble(10, 20), randomDouble(-15, 15));
     this->size = randomDouble(0.5, 3.0);

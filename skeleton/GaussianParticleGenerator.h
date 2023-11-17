@@ -19,7 +19,7 @@ public:
         int numParticlesToGenerate = static_cast<int>(rate * t);
         for (int i = 0; i < numParticlesToGenerate; ++i) {
             Vector3 newVelocity(distribution_x(generator), distribution_y(generator), distribution_z(generator));
-            Particle* newParticle = new Particle(position, newVelocity, Vector3(0, -9.81, 0), 0.99, 136.32,2,false);
+            Particle* newParticle = new Particle(position, newVelocity, Vector3(0, -9.81, 0), 0.99, 136.32,live,false);
             particles.push_back(newParticle);
         }
     }

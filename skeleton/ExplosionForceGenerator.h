@@ -7,7 +7,7 @@ private:
     float K; // Intensidad de la explosión
     float R; // Radio de la explosión
     float tau; // Constante de tiempo de la explosión
-    float startTime; // Momento en que ocurre la explosión
+    float startTime = 0; // Momento en que ocurre la explosión
 
 public:
     ExplosionForceGenerator(const Vector3& center, float K, float R, float tau)
@@ -19,7 +19,7 @@ public:
         float distance = toParticle.magnitude();
 
         // Si la partícula está dentro del radio de la explosión
-        if (distance < R) {
+        if (distance < R && startTime >0) {
             float timeSinceExplosion = time - startTime;
             // Asegúrate de que no dividimos por cero
             if (distance < 0.001f) distance = 0.001f;
@@ -27,6 +27,8 @@ public:
             float magnitude = K * exp(-timeSinceExplosion / tau) / (distance * distance);
             toParticle.normalize();
             particle->addForce(toParticle * magnitude * 5000);
+            if (time >= startTime + 4)
+                startTime = 0;
         }
     }
 
