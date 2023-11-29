@@ -7,7 +7,7 @@ private:
     float K; // Constante de fuerza del torbellino
 
 public:
-    VortexForceGenerator(const Vector3& center, float K)
+    VortexForceGenerator(std::string name, const Vector3& center, float K)
         : center(center), K(K) {}
 
     void updateForce(Particle* particle, float duration) override {

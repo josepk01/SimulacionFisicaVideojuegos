@@ -12,8 +12,13 @@ ParticleSystem::~ParticleSystem()
 void ParticleSystem::addForceGenerator(ForceGenerator* forceGenerator) {
     forceGenerators.push_back(forceGenerator);
 }
-void ParticleSystem::addExplosionGenerator(ExplosionForceGenerator* forceGenerator) {
-    explosionGen = forceGenerator;
+ForceGenerator* ParticleSystem::getForceGenerator(std::string name) {
+    for (ForceGenerator* fg : forceGenerators) {
+        if (fg->getName() == name) {
+            return fg;
+        }
+    }
+    return nullptr;
 }
 void ParticleSystem::integrate(double t) {
     // Actualiza todas las partículas en la lista de partículas

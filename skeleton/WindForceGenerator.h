@@ -7,7 +7,7 @@ private:
     float k1; // Coeficiente de arrastre lineal
 
 public:
-    WindForceGenerator(const Vector3& windVelocity, float k1)
+    WindForceGenerator(std::string name, const Vector3& windVelocity, float k1)
         : windVelocity(windVelocity), k1(k1) {}
 
     void updateForce(Particle* particle, float duration) override {

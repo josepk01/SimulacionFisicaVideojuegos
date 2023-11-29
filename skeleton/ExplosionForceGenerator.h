@@ -10,7 +10,7 @@ private:
     float startTime = 0; // Momento en que ocurre la explosión
 
 public:
-    ExplosionForceGenerator(const Vector3& center, float K, float R, float tau)
+    ExplosionForceGenerator(std::string name, const Vector3& center, float K, float R, float tau)
         : center(center), K(K), R(R), tau(tau), startTime(0) {}
 
     void updateForce(Particle* particle, float time) override {
