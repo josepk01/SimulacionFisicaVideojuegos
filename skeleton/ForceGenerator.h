@@ -1,3 +1,6 @@
+#pragma once
+#include "Particle.h"
+
 class ForceGenerator {
 protected:
     std::string _name;

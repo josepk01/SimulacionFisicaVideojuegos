@@ -73,6 +73,9 @@
     <ClInclude Include="ExplosionForceGenerator.h">
       <Filter>Generators</Filter>
     </ClInclude>
+    <ClInclude Include="SpringForceGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
