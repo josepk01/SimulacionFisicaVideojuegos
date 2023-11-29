@@ -13,6 +13,7 @@
 #include "WindForceGenerator.h"
 #include "VortexForceGenerator.h"
 #include "ExplosionForceGenerator.h"
+#include "SpringForceGenerator.h"
 
 std::string display_text = "This is a test";
 using namespace physx;
@@ -47,7 +48,12 @@ enum NamedForceGenerator {
 
 ParticleGeneratorType currentGeneratorType = DEFAULT_GENERATOR;
 NamedForceGenerator currentForceGeneratorType = WINDFORCEGENERATOR;
-
+// Variables Globales
+Vector3 anchorPoint = Vector3(0, 10, 0); // Punto de anclaje del muelle
+float springConstant = 10.0f;            // Constante del muelle
+float restLength = 5.0f;                 // Longitud de reposo del muelle
+Particle* springParticle = nullptr;      // Partícula unida al muelle
+SpringForceGenerator* spring;
 void shootProjectile(const PxTransform& camera) {
     Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
     PxVec3 direction = camera.q.getBasisVector2() * -1;
@@ -100,6 +106,13 @@ void initPhysics(bool interactive) {
     particleSystem->addForceGenerator(new WindForceGenerator("Wind", Vector3(0.0f, 0.0f, 0.0f),100));
     particleSystem->addForceGenerator(new VortexForceGenerator("Vortex", Vector3(0, 0, 0), 10000.0f));
     particleSystem->addForceGenerator(new ExplosionForceGenerator("Explosion", Vector3(0, 0, 0), 10000.0f, 100.0f, 10.0f));
+    // Crear y añadir generador de muelle
+    spring = new SpringForceGenerator("Spring", anchorPoint, springConstant, restLength);
+    particleSystem->addForceGenerator(spring);
+
+    // Crear una partícula y añadirla al sistema
+    springParticle = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    particleSystem->addParticle(springParticle);
 }
 
 void stepPhysics(bool interactive, double t) {
@@ -166,6 +179,21 @@ void keyPress(unsigned char key, const PxTransform& camera) {
     //    currentForceGeneratorType = EXPLOSIONFORCEGENERATOR;
     //    std::cout << "Selected Spring Force Generator." << std::endl;
     //    break;
+    case 'F':  // Aplicar fuerza a la partícula del muelle
+        if (springParticle) {
+            springParticle->addForce(Vector3(10, 0, 0)); // Aplica una fuerza en dirección X
+        }
+        break;
+
+    case '+': // Aumentar la constante del muelle
+        springConstant += 10;
+        spring->setSpringConstant(springConstant); // Asegúrate de que spring esté definido
+        break;
+
+    case '-': // Disminuir la constante del muelle
+        springConstant -= 10;
+        spring->setSpringConstant(springConstant); // Asegúrate de que spring esté definido
+        break;
         // ... otros casos para otros generadores de fuerzas ...
     }
 

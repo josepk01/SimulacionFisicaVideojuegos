@@ -3,7 +3,7 @@
 
 class ExplosionForceGenerator : public ForceGenerator {
 private:
-    Vector3 center; // Centro de la explosión (x_c, y_c, z_c)
+    Vector3 center; // Centro de la explosión
     float K; // Intensidad de la explosión
     float R; // Radio de la explosión
     float tau; // Constante de tiempo de la explosión
@@ -11,7 +11,7 @@ private:
 
 public:
     ExplosionForceGenerator(std::string name, const Vector3& center, float K, float R, float tau)
-        : center(center), K(K), R(R), tau(tau), startTime(0) {}
+        : ForceGenerator(name), center(center), K(K), R(R), tau(tau), startTime(0) {}
 
     void updateForce(Particle* particle, float time) override {
 

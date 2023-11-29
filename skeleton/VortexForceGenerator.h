@@ -3,12 +3,12 @@
 
 class VortexForceGenerator : public ForceGenerator {
 private:
-    Vector3 center; // Centro del torbellino (x_c, y_c, 0) para el ejemplo 2D
+    Vector3 center; // Centro del torbellino
     float K; // Constante de fuerza del torbellino
 
 public:
     VortexForceGenerator(std::string name, const Vector3& center, float K)
-        : center(center), K(K) {}
+        : ForceGenerator(name), center(center), K(K) {}
 
     void updateForce(Particle* particle, float duration) override {
         // Solo aplicamos la fuerza si la partícula tiene masa finita

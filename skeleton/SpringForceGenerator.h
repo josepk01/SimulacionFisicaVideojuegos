@@ -9,8 +9,8 @@ private:
     float restLength;// Longitud de reposo
 
 public:
-    SpringForceGenerator(const Vector3& anchor, float k, float restLength)
-        : anchor(anchor), k(k), restLength(restLength) {}
+    SpringForceGenerator(const std::string& name, const Vector3& anchor, float k, float restLength)
+        : ForceGenerator(name), anchor(anchor), k(k), restLength(restLength) {}
 
     void updateForce(Particle* particle, float duration) override {
         Vector3 force;
@@ -22,5 +22,9 @@ public:
         force.normalize();
         force *= -magnitude;
         particle->addForce(force);
+    }
+    void setSpringConstant(const int diff )
+    {
+
     }
 };
