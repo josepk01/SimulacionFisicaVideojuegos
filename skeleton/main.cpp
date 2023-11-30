@@ -14,7 +14,8 @@
 #include "VortexForceGenerator.h"
 #include "ExplosionForceGenerator.h"
 #include "SpringForceGenerator.h"
-#include "BungeeForceGenerator .h"
+#include "BungeeForceGenerator.h"
+#include "BuoyancyForceGenerator.h"
 
 std::string display_text = "This is a test";
 using namespace physx;
@@ -143,35 +144,58 @@ void initPhysics(bool interactive) {
     particleSystem->addForceGenerator(springGen);
     spring = springGen;
 
-    // Crear una partícula y añadirla al sistema
-    springParticle = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    particleSystem->addParticle(springParticle); // Añadir la partícula al sistema
+    //// Crear una partícula y añadirla al sistema
+    //springParticle = new Particle(Vector3(0, 0, 15), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    //particleSystem->addParticle(springParticle); // Añadir la partícula al sistema
 
-    // Crear dos partículas
-    particleA = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    particleB = new Particle(Vector3(0, 15, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    particleC = new Particle(Vector3(5, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    particleD = new Particle(Vector3(15, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    particleE = new Particle(Vector3(0, 0, 10), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    // Añadir las partículas al sistema
-    particleSystem->addParticle(particleA);
-    particleSystem->addParticle(particleB);
-    particleSystem->addParticle(particleC);
-    particleSystem->addParticle(particleD);
-    particleSystem->addParticle(particleE);
-    // Crear y añadir el generador de fuerzas de goma elástica
-    bungee1 = new BungeeForceGenerator("bungee1",particleB, 20.0f, 5.0f);
-    bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
-    particleSystem->addForceGenerator(bungee1);    
-    particleSystem->addForceGenerator(bungee2);
+    //// Crear dos partículas
+    //particleA = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    //particleB = new Particle(Vector3(0, 15, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
 
-    //----opcional goma
-    bungee3 = new BungeeForceGenerator("bungee3", particleC, 20.0f, 5.0f);
-    bungee4 = new BungeeForceGenerator("bungee4", particleD, 20.0f, 5.0f);
-    bungee5 = new BungeeForceGenerator("bungee5", particleE, 20.0f, 5.0f);
-    particleSystem->addForceGenerator(bungee3);
-    particleSystem->addForceGenerator(bungee4);
-    particleSystem->addForceGenerator(bungee5);
+    //// Añadir las partículas al sistema
+    //particleSystem->addParticle(particleA);
+    //particleSystem->addParticle(particleB);
+
+    //// Crear y añadir el generador de fuerzas de goma elástica
+    //bungee1 = new BungeeForceGenerator("bungee1",particleB, 20.0f, 5.0f);
+    //bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
+    //particleSystem->addForceGenerator(bungee1);    
+    //particleSystem->addForceGenerator(bungee2);
+
+    ////----opcional goma
+    //particleC = new Particle(Vector3(5, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    //particleD = new Particle(Vector3(15, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    //particleE = new Particle(Vector3(0, 0, 10), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    //particleSystem->addParticle(particleC);
+    //particleSystem->addParticle(particleD);
+    //particleSystem->addParticle(particleE);
+    //bungee3 = new BungeeForceGenerator("bungee3", particleC, 20.0f, 5.0f);
+    //bungee4 = new BungeeForceGenerator("bungee4", particleD, 20.0f, 5.0f);
+    //bungee5 = new BungeeForceGenerator("bungee5", particleE, 20.0f, 5.0f);
+    //particleSystem->addForceGenerator(bungee3);
+    //particleSystem->addForceGenerator(bungee4);
+    //particleSystem->addForceGenerator(bungee5);
+    //----------------------------
+    // Esta es solo una representación visual y no necesita ser parte del sistema de partículas
+    WaterSurface* waterSurface = new WaterSurface(Vector3(0, 0, 0), Vector3(100, 0.1, 100)); // Un cubo plano grande
+
+    // Crear una partícula para el objeto flotante
+    float objectVolume = 5.0f; // El volumen del objeto (ajustar según sea necesario)
+    float objectMass = 10.0f; // La masa del objeto (ajustar según sea necesario)
+    Particle* floatingObject = new Particle(Vector3(0, 10, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, objectMass, objectVolume, false);
+
+    // Añadir la partícula del objeto flotante al sistema
+    particleSystem->addParticle(floatingObject);
+
+    // Crear y añadir el generador de fuerzas de flotación
+    float waterHeight = 0.0f; // La altura de la superficie del agua
+    float liquidDensity = 1000.0f; // La densidad del agua
+    float maxDepth = 100.0f;//profundidad de agua
+    BuoyancyForceGenerator* buoyancyGen = new BuoyancyForceGenerator("buoyancy", maxDepth, objectVolume,waterHeight, liquidDensity);
+    particleSystem->addForceGenerator(buoyancyGen);
+
+    // Asociar la fuerza de flotación con la partícula del objeto flotante
+    buoyancyGen->addParticle(floatingObject);
 }
 
 

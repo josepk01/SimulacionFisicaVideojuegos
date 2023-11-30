@@ -94,7 +94,7 @@ void ParticleSystem::createParticle(Vector3 position, Vector3 velocity, Vector3 
         Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 4, firework);
         particles.push_back(newParticle);
     }
-    else if(firework)
+    else
     {
         fireworks.push_back(new Firework(position, fireworks, 3));
     }
