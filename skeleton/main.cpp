@@ -57,8 +57,14 @@ Particle* springParticle = nullptr;      // Partícula unida al muelle
 SpringForceGenerator* spring;
 Particle* particleA = nullptr;  // Primera partícula
 Particle* particleB = nullptr;  // Segunda partícula
+Particle* particleC = nullptr;  // Segunda partícula
+Particle* particleD = nullptr;  // Segunda partícula
+Particle* particleE = nullptr;  // Segunda partícula
 BungeeForceGenerator* bungee1 = nullptr; // Generador de fuerzas de goma elástica
-BungeeForceGenerator* bungee2  = nullptr; // Generador de fuerzas de goma elástica
+BungeeForceGenerator* bungee2 = nullptr; // Generador de fuerzas de goma elástica
+BungeeForceGenerator* bungee3 = nullptr; // Generador de fuerzas de goma elástica
+BungeeForceGenerator* bungee4 = nullptr; // Generador de fuerzas de goma elástica
+BungeeForceGenerator* bungee5 = nullptr; // Generador de fuerzas de goma elástica
 // Función auxiliar para activar/desactivar generadores de fuerza
 void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
     if (currentForceGeneratorType == type) {
@@ -144,17 +150,28 @@ void initPhysics(bool interactive) {
     // Crear dos partículas
     particleA = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
     particleB = new Particle(Vector3(0, 15, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-
+    particleC = new Particle(Vector3(5, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    particleD = new Particle(Vector3(15, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    particleE = new Particle(Vector3(0, 0, 10), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
     // Añadir las partículas al sistema
     particleSystem->addParticle(particleA);
     particleSystem->addParticle(particleB);
-
+    particleSystem->addParticle(particleC);
+    particleSystem->addParticle(particleD);
+    particleSystem->addParticle(particleE);
     // Crear y añadir el generador de fuerzas de goma elástica
     bungee1 = new BungeeForceGenerator("bungee1",particleB, 20.0f, 5.0f);
     bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
     particleSystem->addForceGenerator(bungee1);    
     particleSystem->addForceGenerator(bungee2);
 
+    //----opcional goma
+    bungee3 = new BungeeForceGenerator("bungee3", particleC, 20.0f, 5.0f);
+    bungee4 = new BungeeForceGenerator("bungee4", particleD, 20.0f, 5.0f);
+    bungee5 = new BungeeForceGenerator("bungee5", particleE, 20.0f, 5.0f);
+    particleSystem->addForceGenerator(bungee3);
+    particleSystem->addForceGenerator(bungee4);
+    particleSystem->addForceGenerator(bungee5);
 }
 
 
