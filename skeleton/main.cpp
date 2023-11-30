@@ -14,6 +14,7 @@
 #include "VortexForceGenerator.h"
 #include "ExplosionForceGenerator.h"
 #include "SpringForceGenerator.h"
+#include "BungeeForceGenerator .h"
 
 std::string display_text = "This is a test";
 using namespace physx;
@@ -54,6 +55,10 @@ float springConstant = 10.0f;            // Constante del muelle
 float restLength = 5.0f;                 // Longitud de reposo del muelle
 Particle* springParticle = nullptr;      // Partícula unida al muelle
 SpringForceGenerator* spring;
+Particle* particleA = nullptr;  // Primera partícula
+Particle* particleB = nullptr;  // Segunda partícula
+BungeeForceGenerator* bungee1 = nullptr; // Generador de fuerzas de goma elástica
+BungeeForceGenerator* bungee2  = nullptr; // Generador de fuerzas de goma elástica
 // Función auxiliar para activar/desactivar generadores de fuerza
 void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
     if (currentForceGeneratorType == type) {
@@ -135,6 +140,21 @@ void initPhysics(bool interactive) {
     // Crear una partícula y añadirla al sistema
     springParticle = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
     particleSystem->addParticle(springParticle); // Añadir la partícula al sistema
+
+    // Crear dos partículas
+    particleA = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+    particleB = new Particle(Vector3(0, 15, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
+
+    // Añadir las partículas al sistema
+    particleSystem->addParticle(particleA);
+    particleSystem->addParticle(particleB);
+
+    // Crear y añadir el generador de fuerzas de goma elástica
+    bungee1 = new BungeeForceGenerator("bungee1",particleB, 20.0f, 5.0f);
+    bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
+    particleSystem->addForceGenerator(bungee1);    
+    particleSystem->addForceGenerator(bungee2);
+
 }
 
 
