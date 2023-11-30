@@ -5,12 +5,12 @@
 class SpringForceGenerator : public ForceGenerator {
 private:
     Vector3 anchor;  // Punto de anclaje del muelle
-    float k;         // Constante de muelle
+    int k;         // Constante de muelle
     float restLength;// Longitud de reposo
 
 public:
-    SpringForceGenerator(const std::string& name, const Vector3& anchor, float k, float restLength)
-        : ForceGenerator(name), anchor(anchor), k(k), restLength(restLength) {}
+    SpringForceGenerator(const std::string& name, const Vector3& anchor, float k0, float restLength)
+        : ForceGenerator(name), anchor(anchor), k(k0), restLength(restLength) {}
 
     void updateForce(Particle* particle, float duration) override {
         Vector3 force;
@@ -23,8 +23,8 @@ public:
         force *= -magnitude;
         particle->addForce(force);
     }
-    void setSpringConstant(const int diff )
-    {
+    void setSpringConstant(int newK) {
 
+        k = newK;
     }
 };

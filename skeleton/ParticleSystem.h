@@ -1,5 +1,5 @@
 #pragma once
-
+#include <map>
 #include <list>
 #include "ParticleGenerator.h"
 #include "ForceGenerator.h"
@@ -12,8 +12,10 @@ private:
     std::list<ForceGenerator*> forceGenerators;  // Lista de fuerzas
     std::list<ParticleGenerator*> particle_generators;  // Generadores de partículas
     std::list<Firework*> fireworks;
+    std::map<std::string, ForceGenerator*> activeForceGenerators;
     ExplosionForceGenerator* explosionGen = nullptr;
-    public:
+
+public:
     ParticleSystem();
     ~ParticleSystem();
     void addForceGenerator(ForceGenerator* forceGenerator);
@@ -32,4 +34,8 @@ private:
             explosionGen->detonate(time);
         }
     }
+    void addParticle(Particle* p);
+    void applyForceToParticle(Particle* p, const Vector3& force);
+    void activateForceGenerator(const std::string& name);
+    void deactivateForceGenerator(const std::string& name);
 };

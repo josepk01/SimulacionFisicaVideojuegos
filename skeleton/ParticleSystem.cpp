@@ -9,9 +9,17 @@ ParticleSystem::~ParticleSystem()
 {
 
 }
-void ParticleSystem::addForceGenerator(ForceGenerator* forceGenerator) {
-    forceGenerators.push_back(forceGenerator);
+void ParticleSystem::activateForceGenerator(const std::string& name) {
+    ForceGenerator* fg = getForceGenerator(name);
+    if (fg) {
+        activeForceGenerators[name] = fg;
+    }
 }
+
+void ParticleSystem::deactivateForceGenerator(const std::string& name) {
+    activeForceGenerators.erase(name);
+}
+
 ForceGenerator* ParticleSystem::getForceGenerator(std::string name) {
     for (ForceGenerator* fg : forceGenerators) {
         if (fg->getName() == name) {
@@ -20,11 +28,12 @@ ForceGenerator* ParticleSystem::getForceGenerator(std::string name) {
     }
     return nullptr;
 }
+
 void ParticleSystem::integrate(double t) {
-    // Actualiza todas las partículas en la lista de partículas
-    for (ForceGenerator* fg : forceGenerators) {
+    // Aplicar solo los generadores de fuerza activos
+    for (auto& fg : activeForceGenerators) {
         for (Particle* p : particles) {
-            fg->updateForce(p, t);
+            fg.second->updateForce(p, t);
         }
     }
 
@@ -58,7 +67,6 @@ void ParticleSystem::integrate(double t) {
     }
 }
 
-
 ParticleGenerator* ParticleSystem::getParticleGenerator(std::string name) {
     // Devuelve un generador de partículas por nombre (si existe)
     for (ParticleGenerator* pg : particle_generators) {
@@ -86,7 +94,7 @@ void ParticleSystem::createParticle(Vector3 position, Vector3 velocity, Vector3 
         Particle* newParticle = new Particle(position, velocity, acceleration, damping, mass, 4, firework);
         particles.push_back(newParticle);
     }
-    else
+    else if(firework)
     {
         fireworks.push_back(new Firework(position, fireworks, 3));
     }
@@ -98,4 +106,14 @@ void ParticleSystem::updateParticles(double t) {
     }
 }
 
+void ParticleSystem::addParticle(Particle* p) {
+    particles.push_back(p);
+}
 
+void ParticleSystem::applyForceToParticle(Particle* p, const Vector3& force) {
+    p->addForce(force);
+}
+
+void ParticleSystem::addForceGenerator(ForceGenerator* forceGenerator) {
+    forceGenerators.push_back(forceGenerator);
+}
