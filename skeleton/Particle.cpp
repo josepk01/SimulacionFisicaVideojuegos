@@ -18,7 +18,7 @@ Particle::~Particle() {
 }
 
 bool Particle::isInsideBox(const Vector3& point) {
-    float halfSize = 100.0; // La mitad de 100
+    float halfSize = 1000.0; // La mitad de 100
     return point.x >= pose.p.x - halfSize && point.x <= pose.p.x + halfSize &&
         point.y >= pose.p.y - halfSize && point.y <= pose.p.y + halfSize &&
         point.z >= pose.p.z - halfSize && point.z <= pose.p.z + halfSize;

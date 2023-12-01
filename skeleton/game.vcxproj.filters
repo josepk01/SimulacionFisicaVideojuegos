@@ -76,7 +76,10 @@
     <ClInclude Include="SpringForceGenerator.h">
       <Filter>Generators</Filter>
     </ClInclude>
-    <ClInclude Include="BungeeForceGenerator .h">
+    <ClInclude Include="BuoyancyForceGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="BungeeForceGenerator.h">
       <Filter>Generators</Filter>
     </ClInclude>
   </ItemGroup>
