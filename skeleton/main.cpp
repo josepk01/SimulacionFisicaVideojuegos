@@ -1,3 +1,4 @@
+#pragma once
 #include <ctype.h>
 #include <PxPhysicsAPI.h>
 #include <vector>
@@ -16,8 +17,9 @@
 #include "SpringForceGenerator.h"
 #include "BungeeForceGenerator.h"
 #include "BuoyancyForceGenerator.h"
-#include "PhysicalObjectGenerator.h"
-
+#include "SolidGenerator.h"
+#include "GaussianSolidGen.h"
+#include "SolidManager.h"
 std::string display_text = "This is a test";
 using namespace physx;
 
@@ -34,7 +36,7 @@ ContactReportCallback gContactReportCallback;
 double gameTime;
 
 ParticleSystem* particleSystem = new ParticleSystem();
-
+SolidManager* solidManager = new SolidManager(gScene);
 enum ParticleGeneratorType {
     DEFAULT_GENERATOR,
     GAUSSIAN_GENERATOR,
@@ -57,7 +59,9 @@ Vector3 anchorPoint = Vector3(0, 10, 0); // Punto de anclaje del muelle
 float springConstant = 10.0f;            // Constante del muelle
 float restLength = 5.0f;                 // Longitud de reposo del muelle
 Particle* springParticle = nullptr;      // Partícula unida al muelle
+float masa = 15.0f;
 SpringForceGenerator* spring;
+SolidGenerator* solid;
 Particle* particleA = nullptr;  // Primera partícula
 Particle* particleB = nullptr;  // Segunda partícula
 Particle* particleC = nullptr;  // Segunda partícula
@@ -68,10 +72,7 @@ BungeeForceGenerator* bungee2 = nullptr; // Generador de fuerzas de goma elástic
 BungeeForceGenerator* bungee3 = nullptr; // Generador de fuerzas de goma elástica
 BungeeForceGenerator* bungee4 = nullptr; // Generador de fuerzas de goma elástica
 BungeeForceGenerator* bungee5 = nullptr; // Generador de fuerzas de goma elástica
-
-PhysicalObjectGenerator* objectGenerator = nullptr;
-
-
+GaussianSolidGenerator* gaussianGenerator=nullptr;
 // Función auxiliar para activar/desactivar generadores de fuerza
 void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
     if (currentForceGeneratorType == type) {
@@ -111,7 +112,7 @@ void shootProjectile(const PxTransform& camera) {
 }
 
 void initPhysics(bool interactive) {
-    //PX_UNUSED(interactive);
+    PX_UNUSED(interactive);
     gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
     gPvd = PxCreatePvd(*gFoundation);
     PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
@@ -163,9 +164,9 @@ void initPhysics(bool interactive) {
     particleSystem->addParticle(particleB);
 
     // Crear y añadir el generador de fuerzas de goma elástica
-    bungee1 = new BungeeForceGenerator("bungee1",particleB, 20.0f, 5.0f);
+    bungee1 = new BungeeForceGenerator("bungee1", particleB, 20.0f, 5.0f);
     bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
-    particleSystem->addForceGenerator(bungee1);    
+    particleSystem->addForceGenerator(bungee1);
     particleSystem->addForceGenerator(bungee2);
 
     //----opcional goma
@@ -194,12 +195,46 @@ void initPhysics(bool interactive) {
     // Crear y añadir el generador de fuerzas de flotación
     float waterHeight = 0.0f; // La altura de la superficie del agua
     float liquidDensity = 1000.0f; // La densidad del agua
-    float maxDepth = 100.0f;//profundidad de agua
-    BuoyancyForceGenerator* buoyancyGen = new BuoyancyForceGenerator("buoyancy", maxDepth, objectVolume,waterHeight, liquidDensity);
+    float maxDepth = 20.0f;//profundidad de agua
+    BuoyancyForceGenerator* buoyancyGen = new BuoyancyForceGenerator("buoyancy", maxDepth, objectVolume, waterHeight, liquidDensity);
     particleSystem->addForceGenerator(buoyancyGen);
 
-    ///-----------------
-    objectGenerator = new PhysicalObjectGenerator(gPhysics, gScene, gMaterial);
+    // Para el suelo PX
+    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+
+
+    // Generar suelo
+    PxRigidStatic* Suelo = gPhysics->createRigidStatic(PxTransform({ 0, 0, 0 }));
+
+    PxShape* shape = CreateShape(PxBoxGeometry(100, 0.1, 100));
+    Suelo->attachShape(*shape);
+
+    gScene->addActor(*Suelo);
+
+    RenderItem* item;
+    item = new RenderItem(shape, Suelo, { 0.8,0.8,0.8,1 });//despues de esto se pinta el agua -_-
+
+    //// Añadir un actor dinámico
+
+    //PxRigidDynamic* new_solid;
+
+    //new_solid = gPhysics->createRigidDynamic(PxTransform({ -70, 200, -70 }));
+    //new_solid->setLinearVelocity({ 0, 5, 0 });
+    //new_solid->setAngularVelocity({ 0, 0, 0 });
+    //PxShape* shape_ad = CreateShape(PxBoxGeometry(5, 5, 5));
+    //new_solid->attachShape(*shape_ad);
+
+    //PxRigidBodyExt::updateMassAndInertia(*new_solid, 0.15);
+    //gScene->addActor(*new_solid);
+
+    //// Pintar actor dinámico
+    //RenderItem* dynamic_item;
+
+    //dynamic_item = new RenderItem(shape_ad, new_solid, {0.8, 0.8, 0.8,1 });
+
+    solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+
+    gaussianGenerator = new GaussianSolidGenerator(gPhysics, gScene, *solidManager, Vector3(-70, 200, -70), 5.0, 5.0, 25.0);
 
 }
 
@@ -209,13 +244,12 @@ void stepPhysics(bool interactive, double t) {
     gScene->fetchResults(true);
     particleSystem->updateParticles(t);
     particleSystem->integrate(t);
-    objectGenerator->integrateAll(t);
+    solidManager->integrate(t); // Aquí se actualizan los sólidos
     gameTime = t;
 }
 
 void cleanupPhysics(bool interactive) {
     delete particleSystem;
-    delete objectGenerator;
     PX_UNUSED(interactive);
     gScene->release();
     gDispatcher->release();
@@ -264,11 +298,6 @@ void keyPress(unsigned char key, const PxTransform& camera) {
         case '0': // Activar/Desactivar generador de muelle
             toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
             break;
-            //case 'F':  // Aplicar fuerza a la partícula del muelle
-            //    if (springParticle) {
-            //        particleSystem->applyForceToParticle(springParticle, Vector3(10, 0, 0)); // Aplica una fuerza en dirección X
-            //    }
-            //    break;
         case '+': // Aumentar la constante del muelle
             springConstant += 10;
             spring->setSpringConstant(springConstant);
@@ -279,23 +308,26 @@ void keyPress(unsigned char key, const PxTransform& camera) {
                 spring->setSpringConstant(springConstant);
             }
             break;
-        case 'P':
-        {
-            PxRigidStatic * staticObject = objectGenerator->createStaticObject({ -10, 10, 0 });
-            objectGenerator->addPhysicalObject(new PhysicalObject(staticObject));
+        case 'O': {
+            Vector3 position(-70, 200, -70);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid->createSolid(position, masa);
             break;
         }
-
-        case 'O':
-        {
-            PxRigidDynamic * dynamicObject = objectGenerator->createDynamicObject({ -10, 30, 0 }, 10.0f);
-            objectGenerator->addPhysicalObject(new PhysicalObject(dynamicObject));
+        case 'L': {
+            Vector3 position(-70, 200, -70);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid->createSolid(position, masa + 10);
             break;
         }
-        case 'I':
-        {
-            PxRigidDynamic* dynamicObject = objectGenerator->createDynamicObject({ -10, 30, 0 }, 1.0f);
-            objectGenerator->addPhysicalObject(new PhysicalObject(dynamicObject));
+        case 'K': {
+            Vector3 position(-70, 200, -70);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid->createSolid(position, fmax(masa - 10, 0.01f));
+            break;
+        }
+        case 'Z': {
+            gaussianGenerator->createSolid();
             break;
         }
     }

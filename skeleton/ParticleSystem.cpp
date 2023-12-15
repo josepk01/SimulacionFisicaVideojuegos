@@ -1,3 +1,4 @@
+#pragma once
 #include "ParticleSystem.h"
 #include "ForceGenerator.h"
 
@@ -65,6 +66,7 @@ void ParticleSystem::integrate(double t) {
             ++it;
         }
     }
+
 }
 
 ParticleGenerator* ParticleSystem::getParticleGenerator(std::string name) {

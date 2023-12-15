@@ -13,6 +13,7 @@ private:
     std::list<ParticleGenerator*> particle_generators;  // Generadores de partículas
     std::list<Firework*> fireworks;
     std::map<std::string, ForceGenerator*> activeForceGenerators;
+    std::list<PxRigidDynamic*> rigidDynamics;  // Lista para sólidos rígidos dinámicos de PhysX
     ExplosionForceGenerator* explosionGen = nullptr;
 
 public:
@@ -38,4 +39,6 @@ public:
     void applyForceToParticle(Particle* p, const Vector3& force);
     void activateForceGenerator(const std::string& name);
     void deactivateForceGenerator(const std::string& name);
+    std::list<PxRigidDynamic*>& getActors() { return rigidDynamics; }
+    std::list<ForceGenerator*>& getForceGenerators() { return forceGenerators; }
 };
