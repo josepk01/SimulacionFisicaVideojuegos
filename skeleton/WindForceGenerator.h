@@ -10,7 +10,7 @@ public:
     WindForceGenerator(std::string name, const Vector3& windVelocity, float k1)
         : ForceGenerator(name), windVelocity(windVelocity), k1(k1) {}
 
-    void updateForce(Particle* particle, float duration) override {
+    void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
         // Asumimos que k2 es cero como se especifica en la tarea
 
         // Calcular la velocidad relativa entre el viento y la partícula

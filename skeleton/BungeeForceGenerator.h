@@ -12,7 +12,7 @@ public:
     BungeeForceGenerator(const std::string& name, Particle* other, float k, float restLength)
         : ForceGenerator(name), other(other), k(k), restLength(restLength) {}
 
-    void updateForce(Particle* particle, float duration) override {
+    void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
         // Calcula el vector de la partícula a la otra partícula
         Vector3 force = particle->getPosition() - other->getPosition();
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleSystem.h"
 #include "ForceGenerator.h"
+#include "SolidGenerator.h"
 
 
 ParticleSystem::ParticleSystem() {
@@ -34,7 +35,7 @@ void ParticleSystem::integrate(double t) {
     // Aplicar solo los generadores de fuerza activos
     for (auto& fg : activeForceGenerators) {
         for (Particle* p : particles) {
-            fg.second->updateForce(p, t);
+            fg.second->updateForce(p,nullptr, t);
         }
     }
 

@@ -12,7 +12,7 @@ public:
     SpringForceGenerator(const std::string& name, const Vector3& anchor, float k0, float restLength)
         : ForceGenerator(name), anchor(anchor), k(k0), restLength(restLength) {}
 
-    void updateForce(Particle* particle, float duration) override {
+    void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
         Vector3 force;
         force = particle->getPosition() - anchor; // Vector de la partícula al anclaje
         float magnitude = force.magnitude();

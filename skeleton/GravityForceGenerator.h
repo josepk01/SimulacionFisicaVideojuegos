@@ -8,7 +8,7 @@ public:
     GravityForceGenerator(std::string name, const Vector3& gravity)
         : ForceGenerator(name), gravity(gravity) {}
 
-    void updateForce(Particle* particle, float duration) override {
+    void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
         particle->addForce(gravity * particle->getMass());
     }
 };

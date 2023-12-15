@@ -15,7 +15,7 @@ public:
     ExplosionForceGenerator(std::string name, const Vector3& center, float K, float R, float tau)
         : ForceGenerator(name), center(center), K(K), R(R), tau(tau), startTime(0) {}
 
-    void updateForce(Particle* particle, float time) override {
+    void updateForce(Particle* particle, PxRigidDynamic* actor, float time) override {
 
         Vector3 toParticle = particle->getPosition() - center;
         float distance = toParticle.magnitude();
@@ -33,24 +33,6 @@ public:
                 startTime = 0;
         }
     }
-    void ExplosionForceGenerator::updateForcePx(PxRigidDynamic* actor, float time) {
-        Vector3 position = actor->getGlobalPose().p; // Obtener la posición del actor
-        Vector3 toActor = position - center;
-        float distance = toActor.magnitude();
-
-        // Si el actor está dentro del radio de la explosión
-        if (distance < R && startTime > 0) {
-            float timeSinceExplosion = time - startTime;
-            if (distance < 0.001f) distance = 0.001f;
-            float magnitude = K * exp(-timeSinceExplosion / tau) / (distance * distance);
-            toActor.normalize();
-            // Aplica la fuerza
-            actor->addForce(toActor * magnitude * 5000, PxForceMode::eIMPULSE);
-            if (time >= startTime + 4)
-                startTime = 0;
-        }
-    }
-
 
     // Método para detonar la explosión
     void detonate(float time) {

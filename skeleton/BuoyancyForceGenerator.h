@@ -19,7 +19,7 @@ public:
         //waterSurface = new RenderItem(CreateShape(physx::PxBoxGeometry(20.0f, 20.0f, 20.0f)), &pose, Vector4(0, 1, 0, 1)); // Crea un cuadrado azul para el agua
     }
 
-    virtual void updateForce(Particle* particle, float duration) {
+    virtual void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) {
         // Obtiene la posición de la partícula
         Vector3 position = particle->getPosition();
 
