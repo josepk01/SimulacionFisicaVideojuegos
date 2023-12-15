@@ -16,15 +16,23 @@ public:
         : ForceGenerator(name), maxDepth(maxDepth), volume(volume), waterHeight(waterHeight), liquidDensity(liquidDensity) {
         // Crear la representación visual de la superficie del agua
         physx::PxTransform pose(physx::PxVec3(0.0f, waterHeight, 0.0f)); // Posición central en el origen con la altura de la superficie del agua
-        waterSurface = new RenderItem(CreateShape(physx::PxBoxGeometry(50.0f, 0.1f, 50.0f)), &pose, Vector4(0, 1, 0, 1)); // Crea un cuadrado azul para el agua
+        //waterSurface = new RenderItem(CreateShape(physx::PxBoxGeometry(20.0f, 20.0f, 20.0f)), &pose, Vector4(0, 1, 0, 1)); // Crea un cuadrado azul para el agua
     }
 
     virtual void updateForce(Particle* particle, float duration) {
-        // Calcula la profundidad de la partícula (es decir, la distancia desde la parte superior del objeto hasta la superficie del agua)
-        float depth = particle->getPosition().y;
+        // Obtiene la posición de la partícula
+        Vector3 position = particle->getPosition();
 
-        // Comprueba si está fuera del agua
-        if (depth >= waterHeight + maxDepth) return;
+        // Comprueba si la partícula está dentro del rango horizontal de la superficie del agua
+        // Por ejemplo, si la superficie del agua es un cuadrado centrado en el origen con lado 100
+        bool isWithinHorizontalBounds = (position.x >= -20.0f && position.x <= 20.0f) &&
+            (position.z >= -20.0f && position.z <= 20.0f);
+
+        // Calcula la profundidad de la partícula
+        float depth = position.y;
+
+        // Comprueba si está fuera del agua o fuera de los límites horizontales
+        if (depth >= waterHeight + maxDepth || !isWithinHorizontalBounds) return;
 
         Vector3 force(0, 0, 0);
 
@@ -37,9 +45,10 @@ public:
             force.y = liquidDensity * volume * (depth - waterHeight + maxDepth) / (2 * maxDepth);
         }
 
-        // Aplica la fuerza de flotación (empuje hacia arriba)
+        // Aplica la fuerza de flotación
         particle->addForce(force * 9.8f);
     }
+
 
     // Asegúrate de limpiar la memoria en el destructor
     ~BuoyancyForceGenerator() {
