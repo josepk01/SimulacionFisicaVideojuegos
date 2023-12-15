@@ -18,8 +18,8 @@ private:
     SolidGenerator solidGenerator;
 
 public:
-    GaussianSolidGenerator(PxPhysics* physics, PxScene* scene, SolidManager& manager, Vector3 pos, double std_dev, float minMass, float maxMass)
-        : gPhysics(physics), gScene(scene), solidGenerator(physics, scene, manager), position(pos), standard_deviation(std_dev), minMass(minMass), maxMass(maxMass), generator(std::random_device{}()) {}
+    GaussianSolidGenerator(PxPhysics* physics, PxScene* scene, SolidManager& manager, ParticleSystem* particleS, Vector3 pos, double std_dev, float minMass, float maxMass)
+        : gPhysics(physics), gScene(scene), solidGenerator(physics, scene, manager,particleS), position(pos), standard_deviation(std_dev), minMass(minMass), maxMass(maxMass), generator(std::random_device{}()) {}
 
     void createSolid() {
         std::normal_distribution<double> distribution(0.0, standard_deviation);

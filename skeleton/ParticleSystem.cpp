@@ -30,12 +30,19 @@ ForceGenerator* ParticleSystem::getForceGenerator(std::string name) {
     }
     return nullptr;
 }
+void ParticleSystem::addActor(PxRigidDynamic* actor) {
+    rigidDynamics.push_back(actor);
+}
 
 void ParticleSystem::integrate(double t) {
     // Aplicar solo los generadores de fuerza activos
     for (auto& fg : activeForceGenerators) {
         for (Particle* p : particles) {
             fg.second->updateForce(p,nullptr, t);
+        }
+        // Actualizar fuerzas en actores PhysX
+        for (PxRigidDynamic* actor : rigidDynamics) {
+            fg.second->updateForce(nullptr,actor, t);
         }
     }
 

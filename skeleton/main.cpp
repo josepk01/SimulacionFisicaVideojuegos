@@ -232,9 +232,9 @@ void initPhysics(bool interactive) {
 
     //dynamic_item = new RenderItem(shape_ad, new_solid, {0.8, 0.8, 0.8,1 });
 
-    solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+    solid = new SolidGenerator(gPhysics, gScene, *solidManager, particleSystem);
 
-    gaussianGenerator = new GaussianSolidGenerator(gPhysics, gScene, *solidManager, Vector3(-70, 200, -70), 5.0, 5.0, 25.0);
+    gaussianGenerator = new GaussianSolidGenerator(gPhysics, gScene, *solidManager, particleSystem, Vector3(-70, 200, -70), 5.0, 5.0, 25.0);
 
 }
 
@@ -310,19 +310,19 @@ void keyPress(unsigned char key, const PxTransform& camera) {
             break;
         case 'O': {
             Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
             solid->createSolid(position, masa);
             break;
         }
         case 'L': {
             Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
             solid->createSolid(position, masa + 10);
             break;
         }
         case 'K': {
             Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
             solid->createSolid(position, fmax(masa - 10, 0.01f));
             break;
         }

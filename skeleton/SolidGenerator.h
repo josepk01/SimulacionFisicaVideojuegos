@@ -2,7 +2,7 @@
 #include <PxPhysicsAPI.h>
 #include "RenderUtils.hpp"
 #include "SolidManager.h"
-
+#include "ParticleSystem.h"
 using namespace physx;
 
 class SolidGenerator {
@@ -10,10 +10,11 @@ private:
     PxPhysics* gPhysics;
     PxScene* gScene;
     SolidManager& solidManager; // Agrega esta línea
+    ParticleSystem* particleS = new ParticleSystem();
 
 public:
-    SolidGenerator(PxPhysics* physics, PxScene* scene, SolidManager& manager)
-        : gPhysics(physics), gScene(scene), solidManager(manager) {}
+    SolidGenerator(PxPhysics* physics, PxScene* scene, SolidManager& manager, ParticleSystem* particleSystem)
+        : gPhysics(physics), gScene(scene), solidManager(manager), particleS(particleSystem){}
 
     void createSolid(const Vector3& position, float mass) {
         // Crear y configurar un nuevo sólido rígido dinámico
@@ -28,5 +29,6 @@ public:
         // Pintar actor dinámico
         RenderItem* dynamic_item = new RenderItem(shape_ad, new_solid, { 0.8, 0.8, 0.8, 1 });
         solidManager.addSolid(new_solid);
+        particleS->addActor(new_solid);
     }
 };

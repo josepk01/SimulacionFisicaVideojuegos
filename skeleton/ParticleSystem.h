@@ -26,6 +26,7 @@ public:
     void integrate(double t);
     ParticleGenerator* getParticleGenerator(std::string name);
     ForceGenerator* getForceGenerator(std::string name);
+    void addActor(PxRigidDynamic* actor);
     void addParticleGenerator(ParticleGenerator* generator);
     void createParticleUsingGenerator(std::string generatorName);
     void createParticle(Vector3 position, Vector3 velocity, Vector3 acceleration, double damping, double mass, bool firework);
