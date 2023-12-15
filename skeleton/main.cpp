@@ -1,3 +1,4 @@
+#pragma once
 #include <ctype.h>
 #include <PxPhysicsAPI.h>
 #include <vector>
@@ -18,7 +19,7 @@
 #include "BuoyancyForceGenerator.h"
 #include "SolidGenerator.h"
 #include "GaussianSolidGen.h"
-
+#include "SolidManager.h"
 std::string display_text = "This is a test";
 using namespace physx;
 
@@ -35,7 +36,7 @@ ContactReportCallback gContactReportCallback;
 double gameTime;
 
 ParticleSystem* particleSystem = new ParticleSystem();
-
+SolidManager* solidManager = new SolidManager(gScene);
 enum ParticleGeneratorType {
     DEFAULT_GENERATOR,
     GAUSSIAN_GENERATOR,
@@ -231,14 +232,9 @@ void initPhysics(bool interactive) {
 
     //dynamic_item = new RenderItem(shape_ad, new_solid, {0.8, 0.8, 0.8,1 });
 
-    gaussianGenerator = new GaussianSolidGenerator(
-        gPhysics,
-        gScene,
-        Vector3(-70, 200, -70),  // posición de generación
-        5.0,                // desviación estándar
-        5.0,                // masa mínima
-        25.0                // masa máxima
-    );
+    solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+
+    gaussianGenerator = new GaussianSolidGenerator(gPhysics, gScene, *solidManager, Vector3(-70, 200, -70), 5.0, 5.0, 25.0);
 
 }
 
@@ -248,6 +244,7 @@ void stepPhysics(bool interactive, double t) {
     gScene->fetchResults(true);
     particleSystem->updateParticles(t);
     particleSystem->integrate(t);
+    solidManager->integrate(t); // Aquí se actualizan los sólidos
     gameTime = t;
 }
 
@@ -301,11 +298,6 @@ void keyPress(unsigned char key, const PxTransform& camera) {
         case '0': // Activar/Desactivar generador de muelle
             toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
             break;
-            //case 'F':  // Aplicar fuerza a la partícula del muelle
-            //    if (springParticle) {
-            //        particleSystem->applyForceToParticle(springParticle, Vector3(10, 0, 0)); // Aplica una fuerza en dirección X
-            //    }
-            //    break;
         case '+': // Aumentar la constante del muelle
             springConstant += 10;
             spring->setSpringConstant(springConstant);
@@ -316,25 +308,22 @@ void keyPress(unsigned char key, const PxTransform& camera) {
                 spring->setSpringConstant(springConstant);
             }
             break;
-            // En tu función de manejo de teclas:
         case 'O': {
             Vector3 position(-70, 200, -70);
-
-            solid = new SolidGenerator(gPhysics, gScene);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
             solid->createSolid(position, masa);
             break;
         }
         case 'L': {
             Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene);
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
             solid->createSolid(position, masa + 10);
             break;
         }
         case 'K': {
             Vector3 position(-70, 200, -70);
-
-            solid = new SolidGenerator(gPhysics, gScene);
-            solid->createSolid(position, fmax(masa - 10, 0.01f));// Decrementa la masa, pero no permite que sea menor a 0.01
+            solid = new SolidGenerator(gPhysics, gScene, *solidManager);
+            solid->createSolid(position, fmax(masa - 10, 0.01f));
             break;
         }
         case 'Z': {

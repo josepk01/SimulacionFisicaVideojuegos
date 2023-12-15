@@ -1,6 +1,8 @@
 #pragma once
 #include "ForceGenerator.h"
 
+using namespace physx;
+
 class ExplosionForceGenerator : public ForceGenerator {
 private:
     Vector3 center; // Centro de la explosión
@@ -31,6 +33,24 @@ public:
                 startTime = 0;
         }
     }
+    void ExplosionForceGenerator::updateForcePx(PxRigidDynamic* actor, float time) {
+        Vector3 position = actor->getGlobalPose().p; // Obtener la posición del actor
+        Vector3 toActor = position - center;
+        float distance = toActor.magnitude();
+
+        // Si el actor está dentro del radio de la explosión
+        if (distance < R && startTime > 0) {
+            float timeSinceExplosion = time - startTime;
+            if (distance < 0.001f) distance = 0.001f;
+            float magnitude = K * exp(-timeSinceExplosion / tau) / (distance * distance);
+            toActor.normalize();
+            // Aplica la fuerza
+            actor->addForce(toActor * magnitude * 5000, PxForceMode::eIMPULSE);
+            if (time >= startTime + 4)
+                startTime = 0;
+        }
+    }
+
 
     // Método para detonar la explosión
     void detonate(float time) {

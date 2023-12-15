@@ -1,6 +1,7 @@
 #pragma once
 #include <PxPhysicsAPI.h>
 #include "RenderUtils.hpp"
+#include "SolidManager.h"
 
 using namespace physx;
 
@@ -8,10 +9,11 @@ class SolidGenerator {
 private:
     PxPhysics* gPhysics;
     PxScene* gScene;
+    SolidManager& solidManager; // Agrega esta línea
 
 public:
-    SolidGenerator(PxPhysics* physics, PxScene* scene)
-        : gPhysics(physics), gScene(scene) {}
+    SolidGenerator(PxPhysics* physics, PxScene* scene, SolidManager& manager)
+        : gPhysics(physics), gScene(scene), solidManager(manager) {}
 
     void createSolid(const Vector3& position, float mass) {
         // Crear y configurar un nuevo sólido rígido dinámico
@@ -25,5 +27,6 @@ public:
 
         // Pintar actor dinámico
         RenderItem* dynamic_item = new RenderItem(shape_ad, new_solid, { 0.8, 0.8, 0.8, 1 });
+        solidManager.addSolid(new_solid);
     }
 };

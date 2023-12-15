@@ -88,6 +88,9 @@
     <ClInclude Include="GaussianSolidGen.h">
       <Filter>Generators</Filter>
     </ClInclude>
+    <ClInclude Include="SolidManager.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
