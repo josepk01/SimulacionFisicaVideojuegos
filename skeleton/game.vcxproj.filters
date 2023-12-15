@@ -82,6 +82,12 @@
     <ClInclude Include="BungeeForceGenerator.h">
       <Filter>Generators</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicalObjectGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicalObject.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">

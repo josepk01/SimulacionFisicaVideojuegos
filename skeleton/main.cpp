@@ -16,6 +16,7 @@
 #include "SpringForceGenerator.h"
 #include "BungeeForceGenerator.h"
 #include "BuoyancyForceGenerator.h"
+#include "PhysicalObjectGenerator.h"
 
 std::string display_text = "This is a test";
 using namespace physx;
@@ -67,6 +68,10 @@ BungeeForceGenerator* bungee2 = nullptr; // Generador de fuerzas de goma elástic
 BungeeForceGenerator* bungee3 = nullptr; // Generador de fuerzas de goma elástica
 BungeeForceGenerator* bungee4 = nullptr; // Generador de fuerzas de goma elástica
 BungeeForceGenerator* bungee5 = nullptr; // Generador de fuerzas de goma elástica
+
+PhysicalObjectGenerator* objectGenerator = nullptr;
+
+
 // Función auxiliar para activar/desactivar generadores de fuerza
 void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
     if (currentForceGeneratorType == type) {
@@ -106,7 +111,7 @@ void shootProjectile(const PxTransform& camera) {
 }
 
 void initPhysics(bool interactive) {
-    PX_UNUSED(interactive);
+    //PX_UNUSED(interactive);
     gFoundation = PxCreateFoundation(PX_FOUNDATION_VERSION, gAllocator, gErrorCallback);
     gPvd = PxCreatePvd(*gFoundation);
     PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
@@ -193,6 +198,9 @@ void initPhysics(bool interactive) {
     BuoyancyForceGenerator* buoyancyGen = new BuoyancyForceGenerator("buoyancy", maxDepth, objectVolume,waterHeight, liquidDensity);
     particleSystem->addForceGenerator(buoyancyGen);
 
+    ///-----------------
+    objectGenerator = new PhysicalObjectGenerator(gPhysics, gScene, gMaterial);
+
 }
 
 
@@ -201,11 +209,13 @@ void stepPhysics(bool interactive, double t) {
     gScene->fetchResults(true);
     particleSystem->updateParticles(t);
     particleSystem->integrate(t);
+    objectGenerator->integrateAll(t);
     gameTime = t;
 }
 
 void cleanupPhysics(bool interactive) {
     delete particleSystem;
+    delete objectGenerator;
     PX_UNUSED(interactive);
     gScene->release();
     gDispatcher->release();
@@ -218,58 +228,76 @@ void cleanupPhysics(bool interactive) {
 
 void keyPress(unsigned char key, const PxTransform& camera) {
     switch (toupper(key)) {
-    case ' ':
-        shootProjectile(camera);
-        break;
-    case '1':
-        currentGeneratorType = DEFAULT_GENERATOR;
-        std::cout << "Selected Default Particle Generator." << std::endl;
-        break;
-    case '2':
-        currentGeneratorType = GAUSSIAN_GENERATOR;
-        std::cout << "Selected Gaussian Particle Generator." << std::endl;
-        break;
-    case '3':
-        currentGeneratorType = UNIFORM_GENERATOR;
-        std::cout << "Selected Uniform Particle Generator." << std::endl;
-        break;
-    case '4':
-        currentGeneratorType = FIREWORK_GENERATOR;
-        std::cout << "Selected Firework Particle Generator." << std::endl;
-        break;
-    case 'E': // Suponiendo que 'E' es la tecla para detonar la explosión
-        particleSystem->detonateExplosion(gameTime);
-        break;
-    case 'G': // Gravedad siempre activa, no hace nada al presionar 'G'
-        break;
-    case 'W': // Activar/Desactivar generador de viento
-        toggleForceGenerator("Wind", WINDFORCEGENERATOR);
-        break;
-    case 'V': // Activar/Desactivar generador de vórtice
-        toggleForceGenerator("Vortex", VORTEXFORCEGENERATOR);
-        break;
-    case 'M': // Activar/Desactivar generador de muelle
-        toggleForceGenerator("Spring", SPRINGFORCEGENERATOR);
-        break;
-    case '0': // Activar/Desactivar generador de muelle
-        toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
-        break;
-    //case 'F':  // Aplicar fuerza a la partícula del muelle
-    //    if (springParticle) {
-    //        particleSystem->applyForceToParticle(springParticle, Vector3(10, 0, 0)); // Aplica una fuerza en dirección X
-    //    }
-    //    break;
-    case '+': // Aumentar la constante del muelle
-        springConstant += 10;
-        spring->setSpringConstant(springConstant);
-        break;
-    case '-': // Disminuir la constante del muelle
-        if (springConstant > 10) {
-            springConstant -= 10;
+        case ' ':
+            shootProjectile(camera);
+            break;
+        case '1':
+            currentGeneratorType = DEFAULT_GENERATOR;
+            std::cout << "Selected Default Particle Generator." << std::endl;
+            break;
+        case '2':
+            currentGeneratorType = GAUSSIAN_GENERATOR;
+            std::cout << "Selected Gaussian Particle Generator." << std::endl;
+            break;
+        case '3':
+            currentGeneratorType = UNIFORM_GENERATOR;
+            std::cout << "Selected Uniform Particle Generator." << std::endl;
+            break;
+        case '4':
+            currentGeneratorType = FIREWORK_GENERATOR;
+            std::cout << "Selected Firework Particle Generator." << std::endl;
+            break;
+        case 'E': // Suponiendo que 'E' es la tecla para detonar la explosión
+            particleSystem->detonateExplosion(gameTime);
+            break;
+        case 'G': // Gravedad siempre activa, no hace nada al presionar 'G'
+            break;
+        case 'W': // Activar/Desactivar generador de viento
+            toggleForceGenerator("Wind", WINDFORCEGENERATOR);
+            break;
+        case 'V': // Activar/Desactivar generador de vórtice
+            toggleForceGenerator("Vortex", VORTEXFORCEGENERATOR);
+            break;
+        case 'M': // Activar/Desactivar generador de muelle
+            toggleForceGenerator("Spring", SPRINGFORCEGENERATOR);
+            break;
+        case '0': // Activar/Desactivar generador de muelle
+            toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
+            break;
+            //case 'F':  // Aplicar fuerza a la partícula del muelle
+            //    if (springParticle) {
+            //        particleSystem->applyForceToParticle(springParticle, Vector3(10, 0, 0)); // Aplica una fuerza en dirección X
+            //    }
+            //    break;
+        case '+': // Aumentar la constante del muelle
+            springConstant += 10;
             spring->setSpringConstant(springConstant);
+            break;
+        case '-': // Disminuir la constante del muelle
+            if (springConstant > 10) {
+                springConstant -= 10;
+                spring->setSpringConstant(springConstant);
+            }
+            break;
+        case 'P':
+        {
+            PxRigidStatic * staticObject = objectGenerator->createStaticObject({ -10, 10, 0 });
+            objectGenerator->addPhysicalObject(new PhysicalObject(staticObject));
+            break;
         }
-        break;
-        // ... otros casos para otros generadores de fuerzas ...
+
+        case 'O':
+        {
+            PxRigidDynamic * dynamicObject = objectGenerator->createDynamicObject({ -10, 30, 0 }, 10.0f);
+            objectGenerator->addPhysicalObject(new PhysicalObject(dynamicObject));
+            break;
+        }
+        case 'I':
+        {
+            PxRigidDynamic* dynamicObject = objectGenerator->createDynamicObject({ -10, 30, 0 }, 1.0f);
+            objectGenerator->addPhysicalObject(new PhysicalObject(dynamicObject));
+            break;
+        }
     }
 }
 
