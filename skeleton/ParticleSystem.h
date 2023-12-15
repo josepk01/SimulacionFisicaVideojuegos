@@ -32,6 +32,7 @@ public:
     void createParticle(Vector3 position, Vector3 velocity, Vector3 acceleration, double damping, double mass, bool firework);
     void updateParticles(double t);
     void detonateExplosion(float time) {
+        activateForceGenerator("Explosion");
         if (explosionGen) {
             explosionGen->detonate(time);
         }

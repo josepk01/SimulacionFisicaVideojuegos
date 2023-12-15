@@ -145,7 +145,7 @@ void initPhysics(bool interactive) {
     particleSystem->addForceGenerator(vortexGen);
 
     ExplosionForceGenerator* explosionGen = new ExplosionForceGenerator("Explosion", Vector3(0, 0, 0), 10000.0f, 100.0f, 10.0f);
-    particleSystem->addForceGenerator(explosionGen);
+    particleSystem->addExplosionGenerator(explosionGen);
 
     SpringForceGenerator* springGen = new SpringForceGenerator("Spring", anchorPoint, springConstant, restLength);
     particleSystem->addForceGenerator(springGen);

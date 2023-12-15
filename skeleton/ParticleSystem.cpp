@@ -126,4 +126,12 @@ void ParticleSystem::applyForceToParticle(Particle* p, const Vector3& force) {
 
 void ParticleSystem::addForceGenerator(ForceGenerator* forceGenerator) {
     forceGenerators.push_back(forceGenerator);
+
 }
+
+void ParticleSystem::addExplosionGenerator(ExplosionForceGenerator* forceGenerator) {
+    explosionGen = forceGenerator;
+    addForceGenerator(forceGenerator); // Agrega el generador a la lista general de generadores
+}
+
+
