@@ -51,7 +51,13 @@ enum NamedForceGenerator {
     WINDFORCEGENERATOR,
     BUOYANCYFORCEGENERATOR
 };
-
+enum ParticleShotType {
+    PISTOLA_GENERATOR,
+    AK_GENERATOR,
+    AWP_GENERATOR,
+    CAL50_GENERATOR
+};
+ParticleShotType ShootType = PISTOLA_GENERATOR;
 ParticleGeneratorType currentGeneratorType = DEFAULT_GENERATOR;
 NamedForceGenerator currentForceGeneratorType = GRAVITYFORCEGENERATOR;
 // Variables Globales
@@ -87,24 +93,38 @@ void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
 void shootProjectile(const PxTransform& camera) {
     Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
     PxVec3 direction = camera.q.getBasisVector2() * -1;
-    float speed = 30.0f;
-    Vector3 v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
     Vector3 acceleration = Vector3(0, -9.81, 0);
     double damping = 0.99;
-    double mass = 136.32;
 
-    switch (currentGeneratorType) {
-    case DEFAULT_GENERATOR:
+
+    float speed;
+    Vector3 v;
+    double mass;
+
+    switch (ShootType) {
+    case PISTOLA_GENERATOR:
+        speed = 100.0f;
+        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+        mass = 28.5;
         particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
         break;
-    case GAUSSIAN_GENERATOR:
-        particleSystem->createParticleUsingGenerator("GaussianGenerator");
+    case AK_GENERATOR:
+        speed = 188.0f;
+        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+        mass = 30.1;
+        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
         break;
-    case UNIFORM_GENERATOR:
-        particleSystem->createParticleUsingGenerator("UniformGenerator");
+    case AWP_GENERATOR:
+        speed = 220.0f;
+        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+        mass = 36.3;
+        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
         break;
-    case FIREWORK_GENERATOR:
-        particleSystem->createParticle(Vector3(0, 20, 0), v, acceleration, damping, mass, true);
+    case CAL50_GENERATOR:
+        speed = 234.0f;
+        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+        mass = 160.3;
+        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
         break;
     default:
         break;
@@ -262,74 +282,25 @@ void cleanupPhysics(bool interactive) {
 
 void keyPress(unsigned char key, const PxTransform& camera) {
     switch (toupper(key)) {
-        case ' ':
-            shootProjectile(camera);
-            break;
-        case '1':
-            currentGeneratorType = DEFAULT_GENERATOR;
-            std::cout << "Selected Default Particle Generator." << std::endl;
-            break;
-        case '2':
-            currentGeneratorType = GAUSSIAN_GENERATOR;
-            std::cout << "Selected Gaussian Particle Generator." << std::endl;
-            break;
-        case '3':
-            currentGeneratorType = UNIFORM_GENERATOR;
-            std::cout << "Selected Uniform Particle Generator." << std::endl;
-            break;
-        case '4':
-            currentGeneratorType = FIREWORK_GENERATOR;
-            std::cout << "Selected Firework Particle Generator." << std::endl;
-            break;
-        case 'E': // Suponiendo que 'E' es la tecla para detonar la explosión
-            particleSystem->detonateExplosion(gameTime);
-            break;
-        case 'G': // Gravedad siempre activa, no hace nada al presionar 'G'
-            break;
-        case 'W': // Activar/Desactivar generador de viento
-            toggleForceGenerator("Wind", WINDFORCEGENERATOR);
-            break;
-        case 'V': // Activar/Desactivar generador de vórtice
-            toggleForceGenerator("Vortex", VORTEXFORCEGENERATOR);
-            break;
-        case 'M': // Activar/Desactivar generador de muelle
-            toggleForceGenerator("Spring", SPRINGFORCEGENERATOR);
-            break;
-        case '0': // Activar/Desactivar generador de muelle
-            toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
-            break;
-        case '+': // Aumentar la constante del muelle
-            springConstant += 10;
-            spring->setSpringConstant(springConstant);
-            break;
-        case '-': // Disminuir la constante del muelle
-            if (springConstant > 10) {
-                springConstant -= 10;
-                spring->setSpringConstant(springConstant);
-            }
-            break;
-        case 'O': {
-            Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-            solid->createSolid(position, masa);
-            break;
-        }
-        case 'L': {
-            Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-            solid->createSolid(position, masa + 10);
-            break;
-        }
-        case 'K': {
-            Vector3 position(-70, 200, -70);
-            solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-            solid->createSolid(position, fmax(masa - 10, 0.01f));
-            break;
-        }
-        case 'Z': {
-            gaussianGenerator->createSolid();
-            break;
-        }
+    case ' ':
+        shootProjectile(camera);
+        break;
+    case '1':
+        ShootType = PISTOLA_GENERATOR;
+        std::cout << "Has sacado la pistola" << std::endl;
+        break;
+    case '2':
+        ShootType = AK_GENERATOR;
+        std::cout << "Has sacado el AK-47" << std::endl;
+        break;
+    case '3':
+        ShootType = AWP_GENERATOR;
+        std::cout << "Has sacado el AWP" << std::endl;
+        break;
+    case '4':
+        ShootType = CAL50_GENERATOR;
+        std::cout << "Has sacado el Cal.50" << std::endl;
+        break;
     }
 }
 

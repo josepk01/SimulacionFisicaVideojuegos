@@ -5,7 +5,20 @@
 Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping, double mass, double lifetime, bool firework)
     : pose(pos), vel(v), acc(acceleration), damping(damping), mass(mass),
     lifetime(lifetime), fire(firework), elapsedTime(0.0), isAlive(true), forceAccum(Vector3(0, 0, 0)) {
-    renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(1, 0, 0, 1));
+    if (mass == 28.5) {  // Glock
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.5)), &pose, Vector4(1, 0, 0, 1));  // Rojo
+    }
+    else if (mass == 30.1) {  // AK-47
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.6)), &pose, Vector4(0, 1, 0, 1));  // Verde
+    }
+    else if (mass == 36.3) {  // AWP
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.7)), &pose, Vector4(0, 0, 1, 1));  // Azul
+    }
+    else if (mass == 160.3) {  // Cal.50
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(1, 1, 0, 1));  // Amarillo
+    }
+    else// el resto de aprticulas
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(1, 1, 1, 1)); // Negro
 }
 
 // Destructor de Particle
