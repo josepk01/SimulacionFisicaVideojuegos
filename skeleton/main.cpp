@@ -298,7 +298,7 @@ void initPhysics(bool interactive) {
 }
 
 void activateFireworks() {
-    Vector3 positions[3] = { Vector3(40, 0, 980), Vector3(0, 0, 980), Vector3(-40, 0, 980) };
+    Vector3 positions[3] = { Vector3(40, 0, -980), Vector3(0, 0, -980), Vector3(-40, 0, -980) };
     for (const auto& pos : positions) {
         // Asumiendo que tienes una función para crear y activar un fuego artificial
         // Esta función debe ser implementada según la lógica de tus fuegos artificiales
