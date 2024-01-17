@@ -91,6 +91,9 @@
     <ClInclude Include="SolidManager.h">
       <Filter>Generators</Filter>
     </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Colision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -101,6 +104,9 @@
     </Filter>
     <Filter Include="Particles">
       <UniqueIdentifier>{89e7a8c5-5087-4d82-8a3d-ccce33408617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Colision">
+      <UniqueIdentifier>{7915381e-27e3-48e4-8561-9809d96eeacf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

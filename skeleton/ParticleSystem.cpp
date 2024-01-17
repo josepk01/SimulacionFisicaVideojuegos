@@ -7,10 +7,18 @@
 ParticleSystem::ParticleSystem() {
 
 }
-ParticleSystem::~ParticleSystem()
-{
+ParticleSystem::~ParticleSystem() {
+    for (auto* particle : particles) {
+        delete particle;
+    }
+    particles.clear();
 
+    for (auto* fg : forceGenerators) {
+        delete fg;
+    }
+    forceGenerators.clear();
 }
+
 void ParticleSystem::activateForceGenerator(const std::string& name) {
     ForceGenerator* fg = getForceGenerator(name);
     if (fg) {

@@ -43,4 +43,8 @@ public:
     void deactivateForceGenerator(const std::string& name);
     std::list<PxRigidDynamic*>& getActors() { return rigidDynamics; }
     std::list<ForceGenerator*>& getForceGenerators() { return forceGenerators; }
+    auto getParticles()
+    {
+        return particles;
+    }
 };

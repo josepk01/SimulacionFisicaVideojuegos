@@ -11,8 +11,10 @@ class Particle {
 public:
     Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping, double mass, double lifetime, bool firework);
     virtual ~Particle();
-
+    enum class Tipo { PARTICULA };
+    Tipo getTipo() const { return Tipo::PARTICULA; }
     void integrate(double t);
+    float getRadius() const;
     void addForce(const Vector3& force);
 
     void clearAccumulator();
@@ -21,6 +23,10 @@ public:
     bool isAlivef()
     {
         return isAlive;
+    }
+    void isDeadf()
+    {
+        isAlive = false;
     }
     double getMass()
     {
@@ -34,7 +40,12 @@ public:
     {
         return pose.p;
     }
+    bool obj()
+    {
+        return buena;
+    }
 protected:
+    Tipo tipo = Tipo::PARTICULA;
     bool isInsideBox(const Vector3& point);
     bool isAlive;  // Verdadero si la partícula todavía está activa.
     bool fire;
@@ -47,4 +58,5 @@ protected:
     physx::PxTransform pose;
     RenderItem* renderItem;
     Vector3 forceAccum; // Acumulador de fuerzas aplicadas a la partícula
+    bool buena = false;
 };

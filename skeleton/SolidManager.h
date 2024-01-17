@@ -9,35 +9,69 @@ using namespace physx;
 class SolidManager {
 private:
     std::vector<PxRigidDynamic*> solids;
-    std::unordered_map<PxRigidDynamic*, Vector3> forceAccumulators;
+    Vector3 forceAccumulators;
     PxScene* gScene;
+    bool live = true;
+    bool perdida = false;
+    bool buena = false;
 
 public:
     SolidManager(PxScene* scene) : gScene(scene) {}
+    SolidManager::~SolidManager() {
+        for (auto* solid : solids) {
+            if (solid) {
+                solid->release(); // Asumiendo que 'release' es un método para liberar un sólido
+            }
+        }
+        solids.clear();
+    }
 
-    void addSolid(PxRigidDynamic* solid) {
+    void addSolid(PxRigidDynamic* solid, bool es = false) {
+        buena = es;
         solids.push_back(solid);
-        forceAccumulators[solid] = Vector3(0, 0, 0); // Inicializa el acumulador de fuerzas
+        forceAccumulators = Vector3(0, 0, 0); // Inicializa el acumulador de fuerzas
     }
 
     void addForce(PxRigidDynamic* solid, const Vector3& force) {
-        if (forceAccumulators.find(solid) != forceAccumulators.end()) {
-            forceAccumulators[solid] += force;
-        }
+        forceAccumulators += force;
     }
 
-    void integrate(double t) {
+    void SolidManager::integrate(double t) {
         for (auto& solid : solids) {
             if (!solid) continue;
 
-            Vector3 accumulatedForce = forceAccumulators[solid];
-            // Aplica la fuerza acumulada
-            solid->addForce(PxVec3(accumulatedForce.x, accumulatedForce.y, accumulatedForce.z), PxForceMode::eFORCE);
+            // Definir la velocidad deseada. Ejemplo: movimiento hacia la cámara.
+            Vector3 desiredVelocity = Vector3(0, 0, -50.f); // Ajustar según necesidad
 
-            // Resetea el acumulador de fuerzas
-            forceAccumulators[solid] = Vector3(0, 0, 0);
+            // Obtener la velocidad actual del sólido
+            PxVec3 currentVelocity = solid->getLinearVelocity();
+            Vector3 velocityChange = desiredVelocity - Vector3(currentVelocity.x, currentVelocity.y, currentVelocity.z);
+
+            // Calcular la nueva velocidad. Puedes ajustar esto para suavizar la transición si es necesario.
+            Vector3 newVelocity = Vector3(currentVelocity.x, currentVelocity.y, currentVelocity.z) + velocityChange * t;
+
+            if (solid->getGlobalPose().p.y == 15 || solid->getGlobalPose().p.y == 0)
+                newVelocity.y = -newVelocity.y;
+            if (solid->getGlobalPose().p.x == 40 || solid->getGlobalPose().p.x == -40)
+                newVelocity.x = -newVelocity.x;
+            if (solid->getGlobalPose().p.x == -1100)
+                perdida = false;
+
+            // Establecer la nueva velocidad del sólido
+            solid->setLinearVelocity(PxVec3(newVelocity.x, newVelocity.y, newVelocity.z));
         }
     }
 
-    // Otros métodos según sea necesario...
+    void hit()
+    {
+        live = false;
+    }
+     auto getSolids()
+    {
+        return solids;
+    }
+     bool obj()
+     {
+         return buena;
+     }
 };

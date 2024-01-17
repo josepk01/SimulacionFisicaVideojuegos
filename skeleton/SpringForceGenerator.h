@@ -4,24 +4,26 @@
 
 class SpringForceGenerator : public ForceGenerator {
 private:
-    Vector3 anchor;  // Punto de anclaje del muelle
-    int k;         // Constante de muelle
-    float restLength;// Longitud de reposo
+    Particle* mParticle;  // Partícula asociada
+    Vector3 anchor;       // Punto de anclaje del muelle
+    float k;              // Constante de muelle
+    float restLength;     // Longitud de reposo
 
 public:
-    SpringForceGenerator(const std::string& name, const Vector3& anchor, float k0, float restLength)
-        : ForceGenerator(name), anchor(anchor), k(k0), restLength(restLength) {}
+    SpringForceGenerator(const std::string& name, Particle* particle, const Vector3& anchor, float k0, float restLength)
+        : ForceGenerator(name), mParticle(particle), anchor(anchor), k(k0), restLength(restLength) {}
 
     void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
-        Vector3 force;
-        force = particle->getPosition() - anchor; // Vector de la partícula al anclaje
+        if (!mParticle) return; // Verifica que la partícula exista
+
+        Vector3 force = mParticle->getPosition() - anchor; // Vector de la partícula al anclaje
         float magnitude = force.magnitude();
         magnitude = fabs(magnitude - restLength);
         magnitude *= k;
 
         force.normalize();
         force *= -magnitude;
-        particle->addForce(force);
+        mParticle->addForce(force);
     }
     void setSpringConstant(int newK) {
 

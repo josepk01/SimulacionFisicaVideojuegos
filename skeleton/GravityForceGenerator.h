@@ -9,6 +9,9 @@ public:
         : ForceGenerator(name), gravity(gravity) {}
 
     void updateForce(Particle* particle, PxRigidDynamic* actor, float duration) override {
+        if(particle)
         particle->addForce(gravity * particle->getMass());
+        else
+            actor->addForce(gravity * actor->getMass());
     }
 };

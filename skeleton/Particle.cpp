@@ -7,18 +7,22 @@ Particle::Particle(Vector3 pos, Vector3 v, Vector3 acceleration, double damping,
     lifetime(lifetime), fire(firework), elapsedTime(0.0), isAlive(true), forceAccum(Vector3(0, 0, 0)) {
     if (mass == 28.5) {  // Glock
         renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.5)), &pose, Vector4(1, 0, 0, 1));  // Rojo
+        buena = true;
     }
     else if (mass == 30.1) {  // AK-47
         renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.6)), &pose, Vector4(0, 1, 0, 1));  // Verde
+        buena = true;
     }
     else if (mass == 36.3) {  // AWP
         renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(0.7)), &pose, Vector4(0, 0, 1, 1));  // Azul
+        buena = true;
     }
     else if (mass == 160.3) {  // Cal.50
         renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(1, 1, 0, 1));  // Amarillo
+        buena = true;
     }
     else// el resto de aprticulas
-        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(1, 1, 1, 1)); // Negro
+        renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1.0)), &pose, Vector4(0.5, 0.5, 0.5, 1)); // Negro
 }
 
 // Destructor de Particle
@@ -53,9 +57,6 @@ void Particle::integrate(double t) {
 
     elapsedTime += t;
 
-    // Actualizar posición con velocidad actual
-    pose.p += vel * t;
-
     // Calcular la aceleración resultante a partir del acumulador de fuerzas
     Vector3 resultingAcc = acc;
     if (mass > 0) {
@@ -66,11 +67,31 @@ void Particle::integrate(double t) {
     vel += resultingAcc * t;
     vel *= pow(damping, t);
 
+    // Actualizar posición con velocidad actual
+    pose.p += vel * t;
+
     // Limpiar el acumulador de fuerzas para el siguiente paso
     clearAccumulator();
 
     // Verificar si la partícula sigue "viva"
     if (elapsedTime > lifetime || !isInsideBox(pose.p)) {
         isAlive = false;
+    }
+}
+float Particle::getRadius() const {
+    if (mass == 28.5) { // Glock
+        return 0.5f;
+    }
+    else if (mass == 30.1) { // AK-47
+        return 0.6f;
+    }
+    else if (mass == 36.3) { // AWP
+        return 0.7f;
+    }
+    else if (mass == 160.3) { // Cal.50
+        return 1.0f;
+    }
+    else {
+        return 1.0f; // Radio por defecto para otras partículas
     }
 }

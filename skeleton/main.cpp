@@ -1,6 +1,7 @@
 #pragma once
 #include <ctype.h>
 #include <PxPhysicsAPI.h>
+#include <Time.h>
 #include <vector>
 #include "core.hpp"
 #include "RenderUtils.hpp"
@@ -20,7 +21,9 @@
 #include "SolidGenerator.h"
 #include "GaussianSolidGen.h"
 #include "SolidManager.h"
+#include "CollisionManager.h"
 std::string display_text = "+";
+std::string display_text_win = "+";
 using namespace physx;
 
 PxDefaultAllocator gAllocator;
@@ -34,7 +37,7 @@ PxDefaultCpuDispatcher* gDispatcher = NULL;
 PxScene* gScene = NULL;
 ContactReportCallback gContactReportCallback;
 double gameTime;
-
+CollisionManager* colison = new CollisionManager();
 ParticleSystem* particleSystem = new ParticleSystem();
 SolidManager* solidManager = new SolidManager(gScene);
 enum ParticleGeneratorType {
@@ -53,7 +56,8 @@ enum NamedForceGenerator {
     CONSTANT_WINDFORCEGENERATOR_1,
     CONSTANT_WINDFORCEGENERATOR_2,
     CONSTANT_WINDFORCEGENERATOR_3,
-    BUOYANCYFORCEGENERATOR
+    BUOYANCYFORCEGENERATOR,
+    NINGUNO
 };
 
 enum ParticleShotType {
@@ -84,74 +88,118 @@ BungeeForceGenerator* bungee3 = nullptr; // Generador de fuerzas de goma elástic
 BungeeForceGenerator* bungee4 = nullptr; // Generador de fuerzas de goma elástica
 BungeeForceGenerator* bungee5 = nullptr; // Generador de fuerzas de goma elástica
 GaussianSolidGenerator* gaussianGenerator=nullptr;
+
+double lastShotTime = 0; // Tiempo desde el último disparo
+double fireRatePistola = 0.005; // 0.5 segundos entre disparos para la pistola
+double fireRateAK = 0.001; // 0.1 segundos entre disparos para el AK-47
+double fireRateAWP = 0.015; // 1.5 segundos entre disparos para el AWP
+double fireRateCal50 = 0.020; // 2 segundos entre disparos para el Cal.50
+
+int destructionCount = 0;
+
+Vector3 v;
+
+
+std::string fuerza_actual;
 // Función auxiliar para activar/desactivar generadores de fuerza
 void toggleForceGenerator(const std::string& name, NamedForceGenerator type) {
     if (currentForceGeneratorType == type) {
         particleSystem->deactivateForceGenerator(name);
-        currentForceGeneratorType = GRAVITYFORCEGENERATOR; // Vuelve a la gravedad
+        currentForceGeneratorType = NINGUNO;
+        fuerza_actual = "Null";
     }
     else {
+        particleSystem->deactivateForceGenerator(fuerza_actual);
+        fuerza_actual = name;
         particleSystem->activateForceGenerator(name);
         currentForceGeneratorType = type;
     }
 }
 
 void shootProjectile(const PxTransform& camera) {
-    Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
-    PxVec3 direction = camera.q.getBasisVector2() * -1;
-    Vector3 acceleration = Vector3(0, -9.81, 0);
-    double damping = 0.99;
 
+    double currentTime = gameTime;
+    double timeSinceLastShot = currentTime - lastShotTime;
 
-    float speed;
-    Vector3 v;
-    double mass;
-
-    //switch (currentGeneratorType) {
-    //case DEFAULT_GENERATOR:
-    //    particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
-    //    break;
-    //case GAUSSIAN_GENERATOR:
-    //    particleSystem->createParticleUsingGenerator("GaussianGenerator");
-    //    break;
-    //case UNIFORM_GENERATOR:
-    //    particleSystem->createParticleUsingGenerator("UniformGenerator");
-    //    break;
-    //case FIREWORK_GENERATOR:
-    //    particleSystem->createParticle(Vector3(0, 20, 0), v, acceleration, damping, mass, true);
-    //    break;
-    //default:
-    //    break;
-    //}
-
+    double fireRate;
     switch (ShootType) {
     case PISTOLA_GENERATOR:
-        speed = 100.0f;
-        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
-        mass = 28.5;
-        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+        fireRate = fireRatePistola;
         break;
     case AK_GENERATOR:
-        speed = 188.0f;
-        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
-        mass = 30.1;
-        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+        fireRate = fireRateAK;
         break;
     case AWP_GENERATOR:
-        speed = 220.0f;
-        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
-        mass = 36.3;
-        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+        fireRate = fireRateAWP;
         break;
     case CAL50_GENERATOR:
-        speed = 234.0f;
-        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
-        mass = 160.3;
-        particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+        fireRate = fireRateCal50;
         break;
     default:
+        fireRate = 1.0; // Cadencia por defecto
         break;
     }
+    //if (timeSinceLastShot >= fireRate) { esto era un intento de tener cadencia pero parece que el tiempo no funciona bien 
+    //aun asi esta es la idea q se tenia
+
+
+        Vector3 pos = Vector3(camera.p.x, camera.p.y, camera.p.z);
+        PxVec3 direction = camera.q.getBasisVector2() * -1;
+        Vector3 acceleration = Vector3(0, -9.81, 0);
+        double damping = 0.99;
+
+
+        float speed = 30;
+        v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);;
+        double mass;
+
+        //switch (currentGeneratorType) {
+        //case DEFAULT_GENERATOR:
+        //    particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+        //    break;
+        //case GAUSSIAN_GENERATOR:
+        //    particleSystem->createParticleUsingGenerator("GaussianGenerator");
+        //    break;
+        //case UNIFORM_GENERATOR:
+        //    particleSystem->createParticleUsingGenerator("UniformGenerator");
+        //    break;
+        //case FIREWORK_GENERATOR:
+        //    particleSystem->createParticle(Vector3(0, 20, 0), v, acceleration, damping, mass, true);
+        //    break;
+        //default:
+        //    break;
+        //}
+
+        switch (ShootType) {
+        case PISTOLA_GENERATOR:
+            speed = 100.0f;
+            v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+            mass = 28.5;
+            particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+            break;
+        case AK_GENERATOR:
+            speed = 188.0f;
+            v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+            mass = 30.1;
+            particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+            break;
+        case AWP_GENERATOR:
+            speed = 220.0f;
+            v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+            mass = 36.3;
+            particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+            break;
+        case CAL50_GENERATOR:
+            speed = 234.0f;
+            v = Vector3(direction.x * speed, direction.y * speed, direction.z * speed);
+            mass = 160.3;
+            particleSystem->createParticle(pos, v, acceleration, damping, mass, false);
+            break;
+        default:
+            break;
+        }
+        lastShotTime = currentTime;
+   // }
 }
 
 void initPhysics(bool interactive) {
@@ -179,6 +227,7 @@ void initPhysics(bool interactive) {
     // Crear y añadir generadores de fuerzas
     GravityForceGenerator* gravityGen = new GravityForceGenerator("Gravity", Vector3(0, -9.81f, 0));
     particleSystem->addForceGenerator(gravityGen);  // Gravedad siempre activa
+    particleSystem->activateForceGenerator("Gravity");
 
     // Otros generadores de fuerzas (no activos inicialmente)
     WindForceGenerator* windGen = new WindForceGenerator("Wind", Vector3(0.0f, 0.0f, 0.0f), 0);
@@ -187,13 +236,13 @@ void initPhysics(bool interactive) {
     WindForceGenerator* variableWindGen = new WindForceGenerator("VariableWind", Vector3(0.0f, 0.0f, 0.0f), 0);
     particleSystem->addForceGenerator(variableWindGen);
 
-    WindForceGenerator* constantWindGen1 = new WindForceGenerator("ConstantWind1", Vector3(50.0f, 50.0f, 50.0f), 50.0f);
+    WindForceGenerator* constantWindGen1 = new WindForceGenerator("ConstantWind1", Vector3(10.0f, 0.0f, 0.0f), 50.0f);
     particleSystem->addForceGenerator(constantWindGen1);
 
-    WindForceGenerator* constantWindGen2 = new WindForceGenerator("ConstantWind2", Vector3(-5.0f, 0.0f, 0.0f), 0);
+    WindForceGenerator* constantWindGen2 = new WindForceGenerator("ConstantWind2", Vector3(-15.0f, 0.0f, 0.0f), 50.0f);
     particleSystem->addForceGenerator(constantWindGen2);
 
-    WindForceGenerator* constantWindGen3 = new WindForceGenerator("ConstantWind3", Vector3(0.0f, 5.0f, 0.0f), 0);
+    WindForceGenerator* constantWindGen3 = new WindForceGenerator("ConstantWind3", Vector3(0.0f, 15.0f, 10.0f), 50.0f);
     particleSystem->addForceGenerator(constantWindGen3);
 
     VortexForceGenerator* vortexGen = new VortexForceGenerator("Vortex", Vector3(0, 0, 0), 10000.0f);
@@ -201,58 +250,6 @@ void initPhysics(bool interactive) {
 
     ExplosionForceGenerator* explosionGen = new ExplosionForceGenerator("Explosion", Vector3(0, 0, 0), 10000.0f, 100.0f, 10.0f);
     particleSystem->addExplosionGenerator(explosionGen);
-
-    SpringForceGenerator* springGen = new SpringForceGenerator("Spring", anchorPoint, springConstant, restLength);
-    particleSystem->addForceGenerator(springGen);
-    spring = springGen;
-
-    //// Crear una partícula y añadirla al sistema
-    //springParticle = new Particle(Vector3(0, 0, 15), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    //particleSystem->addParticle(springParticle); // Añadir la partícula al sistema
-
-    //// Crear dos partículas
-    //particleA = new Particle(Vector3(0, 5, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    //particleB = new Particle(Vector3(0, 15, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-
-    //// Añadir las partículas al sistema
-    //particleSystem->addParticle(particleA);
-    //particleSystem->addParticle(particleB);
-
-    //// Crear y añadir el generador de fuerzas de goma elástica
-    //bungee1 = new BungeeForceGenerator("bungee1", particleB, 20.0f, 5.0f);
-    //bungee2 = new BungeeForceGenerator("bungee2", particleA, 20.0f, 5.0f);
-    //particleSystem->addForceGenerator(bungee1);
-    //particleSystem->addForceGenerator(bungee2);
-
-    ////----opcional goma
-    //particleC = new Particle(Vector3(5, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    //particleD = new Particle(Vector3(15, 0, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    //particleE = new Particle(Vector3(0, 0, 10), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, 1.0, 1000, false);
-    //particleSystem->addParticle(particleC);
-    //particleSystem->addParticle(particleD);
-    //particleSystem->addParticle(particleE);
-    //bungee3 = new BungeeForceGenerator("bungee3", particleC, 20.0f, 5.0f);
-    //bungee4 = new BungeeForceGenerator("bungee4", particleD, 20.0f, 5.0f);
-    //bungee5 = new BungeeForceGenerator("bungee5", particleE, 20.0f, 5.0f);
-    //particleSystem->addForceGenerator(bungee3);
-    //particleSystem->addForceGenerator(bungee4);
-    //particleSystem->addForceGenerator(bungee5);
-    ////----------------------------
-
-    //// Crear una partícula para el objeto flotante
-    //float objectVolume = 5.0f; // El volumen del objeto (ajustar según sea necesario)
-    //float objectMass = 10.0f; // La masa del objeto (ajustar según sea necesario)
-    //Particle* floatingObject = new Particle(Vector3(0, 10, 0), Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.99, objectMass, objectVolume, false);
-
-    //// Añadir la partícula del objeto flotante al sistema
-    //particleSystem->addParticle(floatingObject);
-
-    //// Crear y añadir el generador de fuerzas de flotación
-    //float waterHeight = 0.0f; // La altura de la superficie del agua
-    //float liquidDensity = 1000.0f; // La densidad del agua
-    //float maxDepth = 20.0f;//profundidad de agua
-    //BuoyancyForceGenerator* buoyancyGen = new BuoyancyForceGenerator("buoyancy", maxDepth, objectVolume, waterHeight, liquidDensity);
-    //particleSystem->addForceGenerator(buoyancyGen);
 
     // Para el suelo PX
     sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
@@ -276,42 +273,57 @@ void initPhysics(bool interactive) {
     gaussianGenerator = new GaussianSolidGenerator(gPhysics, gScene, *solidManager, particleSystem, Vector3(-70, 200, -70), 5.0, 5.0, 25.0);
 
 
-
-
-
     // Crear partículas y aplicar la fuerza del resorte
-    for (int i = 0; i < 10; ++i) {
-        // Puntos de anclaje y propiedades del resorte
-        Vector3 anchorPointSpring = Vector3(-20, 10, -1000 + (i * 20));
-        float springConstantSpring = 10.0f;
-        float restLengthSpring = 100.0f;
+    for (int i = 0; i < 20; ++i) {
+        Vector3 anchorPointSpring = Vector3(-50, 10, -900 + (i * 60));
+        float springConstantSpring = 1.0f;
+        float restLengthSpring = 10.0f;
 
-        // Crear partícula
-        Vector3 particlePosition = Vector3(-20, 10, -1000 + (i * 20));
+        Vector3 particlePosition = Vector3(-50, 10, -900 + (i * 60));
         Particle* particle = new Particle(particlePosition, Vector3(0, 0, 0), Vector3(0, -9.81, 0), 0.01, 1.0, 9999999, false);
         particleSystem->addParticle(particle);
 
-        // Crear generador de fuerzas de resorte y conectarlo a la partícula
-        std::string springName = "Spring" + std::to_string(i);
-        SpringForceGenerator* springGen = new SpringForceGenerator(springName, anchorPointSpring, springConstantSpring, restLengthSpring);
-
-        //springGen->addParticle(particle); // Asegúrate de que el método addParticle exista y funcione correctamente
+        SpringForceGenerator* springGen = new SpringForceGenerator("Spring" + std::to_string(i), particle, anchorPointSpring, springConstantSpring, restLengthSpring);
         particleSystem->addForceGenerator(springGen);
-        particleSystem->activateForceGenerator(springName);
+        particleSystem->activateForceGenerator(springGen->getName());
+
+        // Crear el poste
+        solid->createPost(Vector3(-50, 5, -900 + (i * 60)), Vector3(1, 10, 1), Vector4(0.5, 0.3, 0.2, 1)); // Ajusta los tamaños y colores según sea necesario
     }
 
-    //particleSystem->activateForceGenerator("Gravity");
-    particleSystem->activateForceGenerator("ConstantWind1");
+
+    toggleForceGenerator("ConstantWind1", CONSTANT_WINDFORCEGENERATOR_1);
 
 
 }
 
+void activateFireworks() {
+    Vector3 positions[3] = { Vector3(40, 0, 980), Vector3(0, 0, 980), Vector3(-40, 0, 980) };
+    for (const auto& pos : positions) {
+        // Asumiendo que tienes una función para crear y activar un fuego artificial
+        // Esta función debe ser implementada según la lógica de tus fuegos artificiales
+        particleSystem->createParticle(pos, v, Vector3(0, -9.81, 0), 0.99, 1, true);
+    }
+}
 void stepPhysics(bool interactive, double t) {
     gScene->simulate(t);
     gScene->fetchResults(true);
     particleSystem->updateParticles(t);
     particleSystem->integrate(t);
     solidManager->integrate(t); // Aquí se actualizan los sólidos
+    if (colison->checkCollisions(particleSystem, solidManager))
+    {
+        destructionCount++;
+
+
+        // Verifica si el contador superó un múltiplo de 10
+        if (destructionCount % 10 == 0) {
+            // Activa fuegos artificiales
+            activateFireworks();
+        }
+    }
+    // Actualiza el texto del contador
+    display_text_win = "Has destruido " + std::to_string(destructionCount)+" objetos";
     gameTime = t;
 }
 
@@ -348,89 +360,31 @@ void keyPress(unsigned char key, const PxTransform& camera) {
         ShootType = CAL50_GENERATOR;
         std::cout << "Has sacado el Cal.50" << std::endl;
         break;
-
-    //case ' ':
-    //    shootProjectile(camera);
-    //    break;
-    //case '1':
-    //    currentGeneratorType = DEFAULT_GENERATOR;
-    //    std::cout << "Selected Default Particle Generator." << std::endl;
-    //    break;
-    //case '2':
-    //    currentGeneratorType = GAUSSIAN_GENERATOR;
-    //    std::cout << "Selected Gaussian Particle Generator." << std::endl;
-    //    break;
-    //case '3':
-    //    currentGeneratorType = UNIFORM_GENERATOR;
-    //    std::cout << "Selected Uniform Particle Generator." << std::endl;
-    //    break;
-    //case '4':
-    //    currentGeneratorType = FIREWORK_GENERATOR;
-    //    std::cout << "Selected Firework Particle Generator." << std::endl;
-    //    break;
-    //case 'E': // Suponiendo que 'E' es la tecla para detonar la explosión
-    //    particleSystem->detonateExplosion(gameTime);
-    //    break;
     case 'Z': // Activar/Desactivar generador de viento
-        toggleForceGenerator("ConstantWind1", WINDFORCEGENERATOR);
+        toggleForceGenerator("ConstantWind1", CONSTANT_WINDFORCEGENERATOR_1);
         break;
     case 'X': // Activar/Desactivar generador de viento
-        toggleForceGenerator("ConstantWind2", WINDFORCEGENERATOR);
+        toggleForceGenerator("ConstantWind2", CONSTANT_WINDFORCEGENERATOR_2);
         break;
     case 'C': // Activar/Desactivar generador de viento
-        toggleForceGenerator("ConstantWind3", WINDFORCEGENERATOR);
+        toggleForceGenerator("ConstantWind3", CONSTANT_WINDFORCEGENERATOR_3);
         break;
     case 'V': // Activar/Desactivar generador de viento
-        toggleForceGenerator("VariableWind", WINDFORCEGENERATOR);
+        toggleForceGenerator("VariableWind", VARIABLE_WINDFORCEGENERATOR);
+        break;   
+    case '0': // Activar/Desactivar generador de viento
+        solid->generateRandomSolids(10, camera);
         break;
-    //case 'V': // Activar/Desactivar generador de vórtice
-    //    toggleForceGenerator("Vortex", VORTEXFORCEGENERATOR);
-    //    break;
-    //case 'M': // Activar/Desactivar generador de muelle
-    //    toggleForceGenerator("Spring", SPRINGFORCEGENERATOR);
-    //    break;
-    //case '0': // Activar/Desactivar generador de muelle
-    //    toggleForceGenerator("buoyancy", BUOYANCYFORCEGENERATOR);
-    //    break;
-    //case '+': // Aumentar la constante del muelle
-    //    springConstant += 10;
-    //    spring->setSpringConstant(springConstant);
-    //    break;
-    //case '-': // Disminuir la constante del muelle
-    //    if (springConstant > 10) {
-    //        springConstant -= 10;
-    //        spring->setSpringConstant(springConstant);
-    //    }
-    //    break;
-    //case 'O': {
-    //    Vector3 position(-70, 200, -70);
-    //    solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-    //    solid->createSolid(position, masa);
-    //    break;
-    //}
-    //case 'L': {
-    //    Vector3 position(-70, 200, -70);
-    //    solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-    //    solid->createSolid(position, masa + 10);
-    //    break;
-    //}
-    //case 'K': {
-    //    Vector3 position(-70, 200, -70);
-    //    solid = new SolidGenerator(gPhysics, gScene, *solidManager,particleSystem);
-    //    solid->createSolid(position, fmax(masa - 10, 0.01f));
-    //    break;
-    //}
-    //case 'Z': {
-    //    gaussianGenerator->createSolid();
-    //    break;
-    //}
     }
 }
 
 void onCollision(physx::PxActor* actor1, physx::PxActor* actor2) {
     PX_UNUSED(actor1);
     PX_UNUSED(actor2);
+
 }
+
+
 
 int main(int, const char* const*) {
 #ifndef OFFLINE_EXECUTION
